@@ -54,13 +54,13 @@ Multiple runs against the same repo are additive. The skill uses prior ledgers a
 | `RESOURCE-EXHAUSTION-AND-AVAILABILITY.md` | Shared resource, quota, queue, worker, and operator-spend hunting classes |
 | `DATA-ISOLATION-AND-LIFECYCLE.md` | Tenant isolation, cache, search, export, backup, migration, deletion, and restore hunting classes |
 | `DESKTOP-MOBILE-AND-LOCAL-IPC.md` | Native app, deep-link, webview, exported-component, helper, daemon, and local-IPC hunting classes |
-| `OT-BOUNDARY-AND-CONTROL-WRITES.md` | Write-down paths, approval binding, downloads, zone and conduit crossings, remote access, and bypass modes |
+| `OT-BOUNDARY-AND-CONTROL-WRITES.md` | Write-down paths, approval binding, downloads, zone and conduit crossings, shipped listeners and egress, remote access, and bypass modes |
 | `INDUSTRIAL-PROTOCOLS-AND-DEVICES.md` | OPC UA, MQTT and Sparkplug, fieldbus, historian-interface, gateway, and hostile-device hunting classes |
 | `PROCESS-DATA-INTEGRITY.md` | Quality codes, staleness, timestamps and time zones, units, aggregation, gaps, late data, tag identity, and lab data |
 | `RECORDS-AUDIT-AND-SIGNATURES.md` | Audit-trail completeness and tamper evidence, electronic signatures, retention, restore, and certified copies |
 | `ALARMS-HMI-AND-DISPLAY.md` | Stale and bad-quality display, units and time on screen, trends, shelving and suppression, and notification failure |
 | `AI-IN-PLANT-OPERATIONS.md` | AI recommendations reaching actions, grounding on plant data, fabricated tags, cross-site leakage, and model change control |
-| `GOVERNANCE-CONFIGURATION-AND-CHANGE.md` | Change control, segregation of duties, shared and break-glass accounts, site isolation, updates, and configuration restore |
+| `GOVERNANCE-CONFIGURATION-AND-CHANGE.md` | Change control, segregation of duties, role administration, stored automation and agent-run authority, shared and break-glass accounts, site isolation, updates, and configuration restore |
 | `STANDARDS.md` | Crosswalk from the industrial classes to verified standards identifiers, with sources |
 | `VALIDATION-AND-REPORTING.md` | Phases 3–6 candidate validation, structured output, record verification, and reporting |
 | `report-schema.json` | JSON schema for all three `findings.json` verdicts and both finding kinds |

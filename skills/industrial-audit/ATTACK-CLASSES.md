@@ -28,7 +28,7 @@ Use `confirmed` only when source evidence and bounded validation establish the f
 >
 > The files below serve plant and industrial targets. Select each one for the boundary or data path its `When to use this file` section describes, not because the target is industrial.
 >
-> **OT boundary and control-write targets** (any software that can send a write, command, method call, recipe, program, or mode change toward a controller, SCADA, DCS, or field device, or that sits on a network path between business and control systems): use [OT-BOUNDARY-AND-CONTROL-WRITES.md](OT-BOUNDARY-AND-CONTROL-WRITES.md).
+> **OT boundary and control-write targets** (any software that can send a write, command, method call, recipe, program, or mode change toward a controller, SCADA, DCS, or field device; that sits on a network path between business and control systems; or that runs on a plant network and opens listeners, dials plant hosts, or states where it runs and what leaves the site, such as on-premises, outbound-only, or no telemetry): use [OT-BOUNDARY-AND-CONTROL-WRITES.md](OT-BOUNDARY-AND-CONTROL-WRITES.md).
 >
 > **Industrial protocol and device targets** (OPC UA clients or servers, MQTT and Sparkplug producers or hosts, fieldbus gateways, historian interfaces, edge devices, or protocol translation): use [INDUSTRIAL-PROTOCOLS-AND-DEVICES.md](INDUSTRIAL-PROTOCOLS-AND-DEVICES.md).
 >
@@ -38,9 +38,9 @@ Use `confirmed` only when source evidence and bounded validation establish the f
 >
 > **Alarm, HMI, and display targets** (operator screens, trends, dashboards, alarm and event lists, shelving or suppression, notifications, mobile alerts, or exported reports that people act on): use [ALARMS-HMI-AND-DISPLAY.md](ALARMS-HMI-AND-DISPLAY.md).
 >
-> **AI in plant operations targets** (models, agents, or assistants that read plant data, recommend actions, draft records, or reach write paths, plus their training, evaluation, and monitoring pipelines): use [AI-IN-PLANT-OPERATIONS.md](AI-IN-PLANT-OPERATIONS.md) together with [AI-AND-LLM.md](AI-AND-LLM.md).
+> **AI in plant operations targets** (models, agents, or assistants that read plant data, recommend actions, draft records, or reach write paths, plus their training, evaluation, and monitoring pipelines): use [AI-IN-PLANT-OPERATIONS.md](AI-IN-PLANT-OPERATIONS.md) together with [AI-AND-LLM.md](AI-AND-LLM.md). When agents or automations act under a stored or forwarded identity, or can reach approval, role, user, or allowlist settings, also use [GOVERNANCE-CONFIGURATION-AND-CHANGE.md](GOVERNANCE-CONFIGURATION-AND-CHANGE.md).
 >
-> **Governance, configuration, and change targets** (role and approval models, change-control workflows, multi-site configuration, remote-support access, asset inventory, offline updates, configuration backup and restore, or licensing that can stop a plant function): use [GOVERNANCE-CONFIGURATION-AND-CHANGE.md](GOVERNANCE-CONFIGURATION-AND-CHANGE.md).
+> **Governance, configuration, and change targets** (role and approval models, role and user administration, automations and agent runs that act under a stored owner, change-control workflows, multi-site configuration, remote-support access, asset inventory, offline updates, configuration backup and restore, or licensing that can stop a plant function): use [GOVERNANCE-CONFIGURATION-AND-CHANGE.md](GOVERNANCE-CONFIGURATION-AND-CHANGE.md).
 
 **Injection** (subagent_type: `general`)
 Trace untrusted input from entry point to dangerous sink. What counts as a "dangerous sink" depends on the application:
@@ -59,12 +59,13 @@ Verify that a caller cannot do something outside its authority. Go beyond checki
 - Are there endpoints that gate on authentication but forget authorization?
 - Does the same resource have multiple access paths with inconsistent checks?
 - What about bulk/batch/export/import operations — do they enforce per-item permissions?
+- After a role downgrade, removal, or site change, do sessions, tokens, scheduled jobs, and agent runs stop using the old permission?
 
 For complex access models, split into separate agents for auth bypass vs authorization logic.
 
 **Resource and file handling** (subagent_type: `general`)
 - Path traversal (reading/writing outside intended directories) — including through symlinks, encoded sequences, and null bytes
-- SSRF (making the application fetch attacker-controlled URLs) — including through redirects, DNS rebinding, and URL parser differentials
+- SSRF (making the application fetch attacker-controlled URLs) — including through redirects, DNS rebinding, and URL parser differentials, and, for software on a plant network, fetches that reach historians, gateways, brokers, controllers, or engineering hosts the server can route to
 - Unsafe deserialization, archive extraction (zip slip), temp file handling
 - Memory safety (if applicable): buffer overflows, use-after-free, integer overflow
 - Race conditions on file operations (TOCTOU between check and use)
@@ -142,6 +143,7 @@ Other agents hunt subtle bugs. This agent checks the basic exposures that are ea
 - Are error responses in production returning stack traces, internal paths, or SQL errors?
 - For plant software: are there default or shared gateway, historian, broker, or HMI logins? Is an OPC UA endpoint or client configured with security mode or policy `None`, or set to accept any server or client certificate? Is a broker reachable without authentication, or does it grant a wildcard subscription? Does an admin or configuration web interface listen on all interfaces, or over plain HTTP?
 - For plant software: is a write, command, or simulation flag gated only by a configuration value or environment variable that a deployment could leave on? Are recorded plant fixtures, exports, or screenshots carrying real site names, tag lists, or network addresses checked into the repo?
+- For plant software: does any API response, settings page, configuration export, diagnostics bundle, or error message return a historian, broker, database, or OPC UA connection string, password, or private key to a role below administrator? Does a shipped installer, service definition, or container file open a debug, profiler, or remote-management port, or use host networking?
 
 This agent does not need to be creative. It needs to be thorough and literal. Check every item. Report each result.
 

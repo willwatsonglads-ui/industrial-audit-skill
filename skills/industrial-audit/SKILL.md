@@ -200,12 +200,14 @@ The high/medium discriminator: does the demonstrated result fully defeat an expl
 Calibrate overall severity for `data_integrity` records by the decision the wrong result reaches:
 
 - **critical** — a silently wrong value, time, unit, quality, or identity enters a release, batch, quality, or other regulated record, or drives an automated action that changes the process.
-- **high** — a silently wrong result is shown as current and valid on a surface people use for operating decisions, or an audit-trail entry is lost, misattributed, or altered.
+- **high** — a silently wrong result is shown as current and valid on a surface people use for operating decisions, or, on a path ordinary operation uses, an audit-trail entry for a record the software claims to audit is lost, misattributed, or altered.
 - **medium** — the result is wrong but flagged in a misleading way, needs an uncommon plant condition, or is confined to analysis, reporting, or model training data.
 - **low** — a precision, rounding, or format difference that can mislead a careful reader but changes no decision shown in the trace.
 - **informational** — a confirmed difference with no decision impact, useful mainly as a prerequisite inside a larger finding.
 
 The high/medium discriminator for data integrity: would a competent consumer, using only what the software shows, act on the wrong result? Never rate by the physical consequence a wrong decision might have. The software result is the observed result, and functional safety is out of scope.
+
+Rate an audit-trail defect by the record whose history it hides: high for a record the software claims to audit, medium when the loss needs an uncommon condition such as a crash between two writes or a restore, and low for a content gap the reviewer can fill from other entries on the same screen. The critical anchor covers wrong values entering a record, not gaps in its trail. A deliberate, undetectable change to a trail is a `security` record, high or above under the security anchors, so trail loss under ordinary operation never rates above it.
 
 ### Recommend the smallest effective source fix
 
@@ -230,7 +232,7 @@ Do not end the run before one of exactly two terminal states: (a) all Phase 6 ar
 2. Defense-in-depth advice with no reachable boundary violation.
 3. Live or shared-environment testing where bounded local evidence is insufficient.
 4. Guessing provider, proxy, browser, identity, or deployment behavior not present in source.
-5. Treating intended same-principal authority or self-impact as a cross-boundary result.
+5. Treating intended same-principal authority or self-impact as a cross-boundary result. Where the software separates requester and approver, the separation rule is the boundary.
 6. Reporting a parser or runtime effect stronger than the observed effect.
 7. Emitting prose-only hunter results that cannot be deduplicated or verified.
 8. Re-reporting carried same-source prior confirmed records or using them as exemplars that anchor the hunt.

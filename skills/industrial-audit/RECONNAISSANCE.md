@@ -17,6 +17,7 @@ Read the target at <target>. Do not use network access. Return:
 5. Comparable software or protocol visible from local documentation and dependencies. If no useful comparison is source-grounded, say so.
 6. Missing local toolchains or runtime facts that limit bounded execution.
 7. Plant role, where present: which plant functions the software serves (historian, SCADA/HMI, MES, batch, LIMS, maintenance, quality records, edge gateway, analytics, AI assistant), the plant systems it reads from or writes to, and the recorded fixtures, simulators, or test servers the repository ships for them.
+8. Placement and egress claims, where present: what documentation, installer text, settings help, or comments say about the network level or zone the software runs in, which side opens each connection (outbound-only, push-only), what leaves the site (no telemetry, no cloud, local model only), and any egress allowlist. Quote each claim with its location.
 Return only source facts with repository-relative file:line references.
 ```
 
@@ -28,8 +29,10 @@ Read all source that establishes identity, authorization, isolation, and privile
 2. Authentication or peer identity at each entry surface.
 3. Per-resource authorization and tenant/owner scope.
 4. Process, browser, workload, CI, plugin, model/tool, device, or local-IPC authority, and plant authority: controller, SCADA/HMI, historian, gateway, broker, engineering workstation, edge device, and every role that can approve, sign, release, shelve, acknowledge, or change configuration.
-5. Privilege changes, confirmation, revocation, recovery, and fallback paths.
-6. Which controls are source-visible and which depend on an unobserved deployment fact.
+5. Privilege changes, confirmation, revocation, recovery, and fallback paths, and how each request obtains its permissions: per-request lookup, signed token claim, server-side session copy, or client cache.
+6. The role and permission model as source defines it: roles, permission names, where each is checked (middleware, handler, query, or UI only), who may assign roles, edit role definitions, or issue keys, and every separation of requester and approver the software states.
+7. Every non-human execution identity: agents, sub-agents, MCP servers, plugins, connectors, automations, schedules, and integrations. For each, the credential it uses, whose authority is checked at run time, the tools and routes it can reach (including approve, sign, release, user, role, allowlist, and tool-enable settings), how its tools are filtered by role or switch, the owner it records, and its token lifetime and revocation.
+8. Which controls are source-visible and which depend on an unobserved deployment fact.
 Return trust boundaries and control locations with repository-relative file:line references. Do not infer live reachability.
 ```
 
@@ -37,10 +40,11 @@ Return trust boundaries and control locations with repository-relative file:line
 
 ```text
 Inventory every source-visible place external or lower-trust input enters:
-- HTTP/browser, RPC/message/protocol, files/archive/document, CLI/env/config, plugins/dependencies/CI, cloud events/IAM selectors, model context/tool arguments, mobile/deep-link/webview, and local IPC.
+- HTTP/browser, RPC/message/protocol, files/archive/document, CLI/env/config, plugins/dependencies/CI, cloud events/IAM selectors, model context and each side-effecting agent tool as its own surface, scheduled jobs, automations, and agent runs that start with no live user session, mobile/deep-link/webview, and local IPC.
 - Plant surfaces: industrial protocol sessions and subscriptions (OPC UA, MQTT and Sparkplug, fieldbus gateways), historian reads, writes, and backfill, lab, batch, maintenance, and ERP imports, recipe and configuration files, and operator displays, alarms, notifications, and exports.
+- Outbound connections: every client that dials out, with its destination (hard-coded, configured, or chosen by a user, import, tenant, or agent tool), trigger, payload, the setting that disables it, proxy handling, and any allowlist; every feature that adds, tests, browses, discovers, or scans a connection target; and each stored credential with every connection that uses it. Do not resolve, look up, or contact any host name or address found in source.
 For each surface, follow major transformations, stored or derived copies, and security-relevant sinks. Record source-visible limits and parallel paths to the same effect.
-For plant data, also follow each value's timestamp, unit, quality, and tag identity from the source to every screen, record, report, model input, and automated action, and record where any of them is dropped, converted, defaulted, aggregated, or replaced. List every path that can send a write, command, method call, download, or mode change toward a plant system, including disabled, flag-gated, and test-only paths.
+For plant data, also follow each value's timestamp, unit, quality, and tag identity from the source to every screen, record, report, model input, and automated action, and record where any of them is dropped, converted, defaulted, aggregated, or replaced. List every path that can send a write, command, method call, download, or mode change toward a plant system, including disabled, flag-gated, and test-only paths. For each record family the software treats as evidence (audit trail, signed, batch, release, lab, change, or inspection records), list every writer, including UI and API handlers, imports, migrations, jobs, admin and CLI tools, sync connectors, and agent or automation runners, with the audit hook, transaction boundary, acting identity, and time source each uses, and every copy path out: export, print, archive, backup, restore, and migration.
 Return repository-relative paths and line numbers. Be complete, but do not execute or send inputs.
 ```
 
@@ -55,6 +59,7 @@ Read tests, build definitions, manifests, packaging, and maintained environment 
 5. The final active source path for each deployment mode only where the repository selects it deterministically.
 6. Whether the local platform can enforce an empty allowlisted environment, no external network, read-only target/toolchain mounts, scratch-only writes, and explicit CPU, memory, process, file-size, disk, and wall-clock limits. Missing controls block target-controlled execution.
 7. Whether trusted parent-side code can promote predeclared scratch files with path-confined no-follow descriptor traversal, nonblocking regular-file checks, no-follow traversal of every destination parent, exclusive regular-file destination creation, and explicit per-file and cumulative size bounds. Missing promotion controls block use of scratch files as evidence.
+8. Network defaults: every listener the shipped installers, service definitions, container files, charts, and default configurations open, with bind address, port, protocol, authentication, and default state; container network mode and published ports; firewall rules an installer adds; and discovery responders, broadcast or multicast announcements, and port-mapping requests.
 ```
 
 Add focused reconnaissance agents for materially distinct deployment modes or subsystems that these four do not map. Do not silently omit them: if the budget gate in `SKILL.md` blocks a focused agent, launch nothing for it, seed the unmapped area as a `deferred` ledger unit with reason `budget_cannot_reserve_critics_and_validation`, and disclose the gap in the report.
@@ -75,9 +80,9 @@ State paths and source refs used in `run-metadata.json`. Summarize only the cove
 
 ## Architecture summary and companion selection
 
-The parent synthesizes `<output-dir>/architecture.md`, with a hard cap of about 1,000 words, or about 1,300 when item 9 applies. Include:
+The parent synthesizes `<output-dir>/architecture.md`, with a hard cap of about 1,000 words, or about 1,400 when item 9 applies. Include:
 
-1. Product, principals, normal authority, and protected resources.
+1. Product, principals, normal authority, and protected resources, plus an authority map: the role model and where it is enforced, each non-human execution identity and whose authority it carries at run time, and the separation and approval rules the software states.
 2. The comparable-software baseline from Agent 1a, when one is source-grounded: what security trade-offs the comparable accepts. Use it to calibrate effort and severity, never to dismiss a demonstrated finding; if the comparable shares a defect pattern that has mattered in practice, that strengthens the finding. Omit this line when no meaningful comparable exists.
 3. Tech stack, source-visible deployment paths, and offline build/test limits.
 4. Entry surfaces and the important source-to-sink or lifecycle paths.
@@ -86,11 +91,12 @@ The parent synthesizes `<output-dir>/architecture.md`, with a hard cap of about 
 7. Prior coverage gaps, changed-source and blocked revalidation targets, and same-source confirmed exclusions.
 8. A short companion-selection summary derived from [ATTACK-CLASSES.md](ATTACK-CLASSES.md): selected files and the source-visible boundaries that require them.
 9. Plant placement, when the target serves a plant:
-   - the network level or zone the software is built to run in, as the source or its documentation states it;
+   - the network level or zone the software is built to run in, and its stated egress and connection-direction claims, as the source or its documentation states them;
    - data flows up from and down toward control systems;
+   - each listener with its bind address and default state, each outbound destination with its payload, each feature that lets a user, import, or agent choose a connection target, and each credential used on more than one connection;
    - every write path toward control, with its gate;
    - each clock and time source that stamps data or records;
-   - the regulated or release records the software creates and the rule the repository says governs them.
+   - the regulated or release records the software creates, the rule the repository says governs them, and each record family's writers and copy paths from Agent 1c.
 
    Mark deployment facts that source cannot establish as needs-validation input. Never treat them as settled.
 
@@ -100,7 +106,7 @@ Do not select a companion file merely because the language or dependency name ap
 
 ## Deterministic coverage ledger
 
-The parent writes `<output-dir>/coverage-ledger.json` as a top-level JSON array. Derive one unit for every material combination of entry surface, trust boundary, subsystem, and applicable ordinary or companion attack class at the granularity the run profile sets (`quick` uses one all-in-scope subsystem identity; `deep` adds lifecycle modes). For a scoped run, seed in-scope surfaces for assignment and retain discovered excluded surfaces as `out_of_scope` units so later full runs can turn them into current work.
+The parent writes `<output-dir>/coverage-ledger.json` as a top-level JSON array. Derive one unit for every material combination of entry surface, trust boundary, subsystem, and applicable ordinary or companion attack class at the granularity the run profile sets (`quick` uses one all-in-scope subsystem identity; `deep` adds lifecycle modes). For a record family, treat each writer and copy path from Agent 1c as a surface and the audit hook it should call as the boundary, so a job or migration that is not an external entry point still gets a unit. For a scoped run, seed in-scope surfaces for assignment and retain discovered excluded surfaces as `out_of_scope` units so later full runs can turn them into current work.
 
 Each dimension has a human label and a stable source-derived value in `canonical_refs`. Use the same canonical reference for the same source object across runs even if its display label changes. Suitable references include a repository-relative entry path plus exported scope, a route or message identity defined in source, the source control that defines a boundary, a repository package path, and the exact attack-class block reference. A block reference is `FILE.md#` plus the exact class name as written in bold or as a heading in that file — a stable identifier matched against the file text, not a rendered HTML anchor. For companion section blocks, use the heading text before any parenthetical qualifier (for example `Core discipline`). Do not derive references by lowercasing or slugging display labels.
 

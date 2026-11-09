@@ -61,7 +61,7 @@ Encryption keys, storage accounts, cross-region replicas, restoration environmen
 Direct lookup, search, relation traversal, object link, background processor, or restore ignores the lifecycle predicate and returns or acts on a deleted/revoked record. Check whether soft-deleted identifiers can be re-registered before all references are gone.
 
 **Stale authorization and derived copy use**
-Membership removal, ACL update, consent withdrawal, secret revocation, or role downgrade does not invalidate sessions, caches, subscriptions, jobs, or materialized data that continue to authorize future operations.
+Membership removal, ACL update, consent withdrawal, secret revocation, or role downgrade does not invalidate sessions, caches, subscriptions, jobs, or materialized data that continue to authorize future operations. Find where each request gets its permissions: a per-request lookup, a role or scope claim signed into a token at sign-in, a server-side session copy, or a client-held permission set, and check how long each copy is trusted after the change. Check streams, server-sent event and websocket connections, and subscriptions authorized once at connect time. A change the software documents as taking effect at next sign-in or token expiry, within a stated bound, is not a defect.
 
 **Retention and queued-work overrun**
 Deletion completes in primary storage while queued processors, retries, exports, analytics, or generated artifacts recreate or retain the data beyond the promised boundary. Find idempotent deletion and tombstone propagation.

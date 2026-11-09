@@ -53,12 +53,14 @@ WORK FROM A CONCRETE INVARIANT:
    effect, or locally observable shared-resource effect.
 6. State a source-level change and regression case that enforce the invariant.
 
-FOR A DATA-INTEGRITY UNIT, the invariant is: the value, timestamp, unit, quality, and
-identity a consumer receives equal what the source produced, or the difference is
+FOR A DATA-INTEGRITY UNIT, the invariant is: the value, timestamp, unit, quality,
+identity, and record state a consumer receives, including the audit trail a reviewer
+reads, equal what the source produced or what happened, or the difference is
 visible to that consumer. Name the source sample or record, each transformation, the
 destination, the consumer, and the decision it informs. Name the ordinary plant
 condition that triggers the difference: fault, restart, reconnect, clock change, late
-or corrected data, rename, unit change, or a concurrent writer. Stop at the smallest
+or corrected data, rename, unit change, a concurrent writer, or a record written by
+an import, job, migration, or restore. Stop at the smallest
 wrong stored row, rendered field, record entry, or model input. Return `kind:
 "data_integrity"` and the `data_path` fields. A difference the consumer can already
 see, or one no decision depends on, is not a candidate.
@@ -159,7 +161,8 @@ file separately:
 2. A proposed confirmed record needs a bounded local observed result, meaningful impact
    across a stated boundary, complete conditions, and no visible preventing layer.
 3. Do not strengthen a crash into code execution, ordinary work into shared availability,
-   or a same-principal action into privilege gain.
+   or a same-principal action into privilege gain. A same-principal action that defeats
+   a separation of duties the software states is a boundary result, not privilege gain.
 4. If a required fact is not source-visible or locally observable, use
    needs_validation. Name exact blockers; do not give it severity or speculative completion.
 5. A missing best practice with no affected principal/resource is excluded or hardening,

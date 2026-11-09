@@ -54,6 +54,8 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Outbound-only claim and inbound command channel gaps | `IEC-62443-3-2 ANSI/ISA-62443-3-2-2020`, `IEC-62443-3-3 SR 5.1`, `IEC-62443-3-3 SR 5.2`, `NIST-SP-800-82r3 5.2.3.1`, `NIST-SP-800-82r3 E.1.2` |
 | DMZ brokering and pass-through relay gaps | `IEC-62443-3-2 ANSI/ISA-62443-3-2-2020`, `IEC-62443-3-3 SR 5.2`, `NIST-SP-800-82r3 5.2.3.1`, `NIST-SP-800-82r3 5.4.1` |
 | Store-and-forward and replication direction reversal | `IEC-62443-3-3 SR 5.2`, `NIST-SP-800-82r3 E.1.2` |
+| Shipped listener and network-default exposure | `IEC-62443-3-3 SR 7.7`, `IEC-62443-3-3 SR 7.6`, `IEC-62443-3-3 SR 5.2`, `NIST-SP-800-82r3 5.2.3.1` |
+| Undeclared egress and proxy routing | `IEC-62443-3-3 SR 5.2`, `IEC-62443-3-3 SR 4.1`, `MITRE-ATTACK-ICS T0882` |
 | Remote-access reach beyond the named control-zone asset | `IEC-62443-3-3 SR 1.13`, `IEC-62443-3-3 SR 2.1`, `NIST-SP-800-82r3 6.2.10`, `NIST-SP-800-82r3 E.3.6`, `MITRE-ATTACK-ICS T0822`, `MITRE-ATTACK-ICS T0886` |
 | Engineering project and controller-artifact trust | `IEC-62443-3-3 SR 3.4`, `IEC-62443-3-3 SR 4.1`, `MITRE-ATTACK-ICS T0889`, `MITRE-ATTACK-ICS T0882` |
 | Bypass, maintenance, and simulation mode leakage | `IEC-62443-3-3 SR 2.1`, `IEC-62443-3-3 SR 7.6` |
@@ -79,6 +81,7 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Historian write, replace, and backfill exposure through a read surface | `IEC-62443-3-3 SR 2.1`, `IEC-62443-3-3 SR 3.4` |
 | Device and gateway administration surface exposure | `IEC-62443-3-3 SR 2.1`, `IEC-62443-3-3 SR 7.6`, `MITRE-ATTACK-ICS T0886` |
 | Hostile server and device response trust | `IEC-62443-3-3 SR 3.5`, `OWASP-LLM LLM01:2025` |
+| Caller-chosen plant connection targets | `IEC-62443-3-3 SR 2.1`, `IEC-62443-3-3 SR 5.2`, `NIST-SP-800-82r3 5.4.1` |
 
 ### PROCESS-DATA-INTEGRITY.md
 
@@ -95,6 +98,7 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Aggregate quality and weighting contamination | `OPC-UA Part 13 5.4.3` |
 | Compression and deadband misreading | — |
 | Gap filling, zero substitution, and silent row loss | `OPC-UA Part 4 7.38.1`, `OPC-UA Part 4 7.11.5`, `ALCOA+ Complete` |
+| Calculated value formula and input-version drift | `21-CFR-11 11.10(a)`, `ALCOA+ Original`, `ALCOA+ Consistent` |
 | Late and corrected sample write-rule conflicts | `ALCOA+ Original`, `ALCOA+ Consistent` |
 | Reconnect, replay, and history-into-live duplication | `MQTT-5 Table 3-2`, `MQTT-5 3.3.1.1`, `Sparkplug-B tck-id-operational-behavior-data-publish-nbirth-order` |
 | Tag identity drift and name reuse | — |
@@ -109,6 +113,8 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Unaudited write paths | `21-CFR-11 11.10(e)`, `EU-GMP-Annex-11 9`, `IEC-62443-3-3 SR 2.8` |
 | Audit entry outside the change transaction | `21-CFR-11 11.10(e)`, `ALCOA+ Complete`, `IEC-62443-3-3 SR 2.10` |
 | Skippable or defaulted reason for change | `EU-GMP-Annex-11 9` |
+| Audit-trail review omission and review-mark binding gaps | `EU-GMP-Annex-11 9` |
+| Refused, partial, and read actions recorded wrongly | `ALCOA+ Complete` |
 | Audit-trail mutability by the recorded role | `21-CFR-11 11.10(e)`, `EU-GMP-Annex-11 9`, `IEC-62443-3-3 SR 3.9` |
 | Hash-chain re-chain, truncation, and unrun verification | `21-CFR-11 11.10(a)`, `IEC-62443-3-3 SR 3.4`, `IEC-62443-3-3 SR 3.9` |
 | Audit-entry clock and time-zone gaps | `21-CFR-11 11.10(e)`, `EU-GMP-Annex-11 12.4`, `ALCOA+ Contemporaneous`, `IEC-62443-3-3 SR 2.11`, `NIST-SP-800-82r3 6.2.12` |
@@ -148,6 +154,8 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Class | Identifiers |
 |---|---|
 | AI recommendation-to-action bypass | `CISA-AI-OT 2.4`, `CISA-AI-OT 4.1`, `OWASP-LLM LLM06:2025`, `OWASP-Agentic ASI02`, `NIST-AI-RMF MAP 3.5`, `EU-AI-Act Art. 14` |
+| Agent approval, signature, and release reach | `CISA-AI-OT 4.1`, `OWASP-Agentic ASI03`, `21-CFR-11 11.10(g)`, `EU-AI-Act Art. 14` |
+| Agent reach into authority and permission settings | `IEC-62443-3-3 SR 1.3`, `IEC-62443-3-3 SR 2.1`, `OWASP-LLM LLM06:2025`, `OWASP-Agentic ASI03` |
 | Approval not re-checked against current process state | `CISA-AI-OT 4.1`, `NIST-AI-RMF MAP 3.5` |
 | Approval card built from model narrative | `OWASP-Agentic ASI09`, `EU-AI-Act Art. 14(4)(c)` |
 | Indirect plant write reach through connected systems | `CISA-AI-OT 2.4`, `OWASP-LLM LLM06:2025`, `OWASP-Agentic ASI02` |
@@ -173,7 +181,9 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Site template and mapping copy drift | — |
 | Test and simulation settings in production builds | `IEC-62443-3-3 SR 7.7` |
 | Change self-approval and role-combination gaps | `IEC-62443-3-3 SR 2.1`, `21-CFR-11 11.10(g)` |
+| Role-administration grant ceiling gaps | `IEC-62443-3-3 SR 1.3`, `IEC-62443-3-3 SR 2.1` |
 | Delegated and impersonated authority carryover | `IEC-62443-3-3 SR 2.1`, `IEC-62443-3-3 SR 2.12`, `21-CFR-11 11.100` |
+| Stored-run authority after owner or grant change | `IEC-62443-3-3 SR 2.1`, `21-CFR-11 11.10(g)` |
 | Shared, service, and break-glass account lifecycle gaps | `IEC-62443-3-3 SR 1.3`, `IEC-62443-3-3 SR 1.5`, `MITRE-ATTACK-ICS T0859` |
 | Remote-support and vendor access lifecycle gaps | `IEC-62443-3-3 SR 1.13`, `IEC-62443-3-3 SR 2.6`, `NIST-SP-800-82r3 6.2.10`, `MITRE-ATTACK-ICS T0822`, `MITRE-ATTACK-ICS T0886` |
 | Site identifier trust in multi-site deployments | `IEC-62443-3-3 SR 1.2`, `IEC-62443-3-3 SR 2.1` |

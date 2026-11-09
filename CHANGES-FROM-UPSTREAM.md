@@ -29,28 +29,37 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - a "Plant systems" subsection under Universal execution safety: no connection to live plant systems; no writes, commands or rebirth requests beyond one dummy message to a shipped simulator; functional safety out of scope;
   - the core principle "Require a data path and a wrong result";
   - OT additions to the security severity anchors;
-  - separate severity anchors for data-integrity records;
-  - three new anti-patterns.
+  - separate severity anchors for data-integrity records, with audit-trail defects rated high for a record the software claims to audit, medium under an uncommon condition, and never above deliberate tampering, which stays a `security` record;
+  - three new anti-patterns;
+  - anti-pattern 5 now treats a separation of requester and approver that the software states as the boundary, so self-approval that defeats it is not dismissed as same-principal authority.
 - `RECONNAISSANCE.md`:
   - plant systems added to the no-contact list;
-  - Agent 1a item 7, plant role;
-  - plant authority added to Agent 1b item 4;
-  - plant surfaces and data-path tracing added to Agent 1c, including every write path toward plant systems;
-  - architecture item 9, plant placement, with a word cap of about 1,300 when it applies.
+  - Agent 1a item 7, plant role, and item 8, the software's own placement and egress claims;
+  - plant authority added to Agent 1b item 4; Agent 1b also maps how each request gets its permissions, the role model and stated separations, and every non-human execution identity (agents, MCP servers, automations, schedules) with its credential, run-time authority, reachable tools, owner and token lifetime;
+  - plant surfaces and data-path tracing added to Agent 1c, including every write path toward plant systems; Agent 1c also treats each side-effecting agent tool and each run with no live user session as its own surface, lists outbound connections, connection-target features and shared credentials without resolving any host name, and lists every writer and copy path of each evidence record family;
+  - Agent 1d item 8, the listeners and network defaults that shipped installers and configurations open;
+  - architecture item 1 gains an authority map;
+  - architecture item 9, plant placement, with egress claims, listeners, outbound destinations, caller-chosen targets and record writers, and a word cap of about 1,400 when it applies;
+  - each record writer and copy path becomes a ledger surface, so jobs and migrations get coverage units.
 - `ATTACK-CLASSES.md`:
-  - seven industrial target entries in the companion-selection list;
-  - two plant items under Obvious things;
+  - seven industrial target entries in the companion-selection list, with the OT-boundary entry also selected by listeners, plant-host connections and placement or egress claims, and governance also selected for role administration and for agents and automations acting under a stored or forwarded identity;
+  - three plant items under Obvious things, the third for connection strings shown below administrator and for debug or host-network ports in shipped files;
+  - an Access control question on revocation reaching sessions, tokens, jobs and agent runs, and plant hosts named in the SSRF item;
   - the `confirmed` rule extended to data-integrity records.
 - `HUNTING.md`:
-  - the hunter method extended to data-integrity units;
+  - the hunter method extended to data-integrity units, with record state and the audit trail in the invariant and imports, jobs, migrations and restores among the triggers;
   - plant systems added to the no-contact list;
   - `kind` and `data_path` added to the candidate contract;
-  - write paths, regulated records and operating displays added to the priority order.
+  - write paths, regulated records and operating displays added to the priority order;
+  - candidate gate rule 3: a same-principal action that defeats a separation of duties the software states is a boundary result.
 - `VALIDATION-AND-REPORTING.md`:
   - verifier step 7 for data-integrity candidates;
-  - the record contract for `kind`, `data_path`, `references` and `runtime`;
+  - the record contract for `kind`, `data_path`, `references` and `runtime`, with a `data_path` mapping for audit-trail and record defects;
+  - demotion to `needs_validation` only for a decisive unknown fact; a deployment control that would only compensate for the software's own shipped behaviour is recorded as a condition;
   - `REPORT.md` split into security and data-integrity tables, with a standards column;
   - a rule against compliance claims.
+- `AI-AND-LLM.md`: **Excessive agency and confused-deputy authority** also requires the dispatcher, not the tool list shown to the model, to enforce role and tool switches, and covers MCP servers and connectors that hold one shared credential.
+- `DATA-ISOLATION-AND-LIFECYCLE.md`: **Stale authorization and derived copy use** gains checks for where each request gets its permissions and for streams authorized once at connect time.
 - `README.md`: rewritten for the fork, with credit to the upstream work.
 - `LICENSE`: Cloudflare's notice kept; a copyright line added for the industrial additions.
 
@@ -63,6 +72,8 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - `ALARMS-HMI-AND-DISPLAY.md`
   - `AI-IN-PLANT-OPERATIONS.md`
   - `GOVERNANCE-CONFIGURATION-AND-CHANGE.md`
+
+  Among their classes are agent and automation authority (grant ceilings, stored runs after the owner loses access, agent approval of its own proposals, agent reach into permission settings), audit-trail review and refused or partial actions, calculated-value versioning, shipped listeners, undeclared egress and proxy routing, and caller-chosen plant connection targets. Every class is bounded to what the target software itself claims.
 - `STANDARDS.md`: a crosswalk from the industrial classes to standards identifiers, each checked against a public source. Paywalled standards are cited by identifier only.
 - `scripts/check-skill.cjs`: structural checks for companion headings, selection-list links, the README file table, and unique class names.
 - `.github/workflows/test.yml`: runs the validator tests and the structure check on Linux, Windows, and macOS.
