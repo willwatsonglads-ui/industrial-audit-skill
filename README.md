@@ -109,7 +109,7 @@ A direct codebase audit or pen-test request uses full audit mode. Questions and 
 ## Requirements
 
 - A coding agent with a model that supports tool use and parallel sub-agents
-- Node.js for the zero-dependency findings and coverage-ledger validators. The validators open input files with POSIX no-follow protection and refuse to run where the OS can't provide it, as on native Windows. Run them under Linux, macOS, or WSL.
+- Node.js for the zero-dependency findings and coverage-ledger validators, on Linux, macOS, or Windows. On Windows, where Node has no no-follow open, the validators check the file without following links and then confirm that the opened file is the one they checked.
 - An OS-enforced sandbox for target-controlled builds, tests, processes, browsers, emulators, fuzzers, and fixtures. It must disable external networking, use a sanitized allowlisted environment, enforce resource limits, and allow writes only to assigned scratch paths. Without these controls, the workflow keeps the lead as `needs_validation` instead of executing target code.
 - No access to plant systems. The skill never needs it and refuses to use it.
 
@@ -125,7 +125,7 @@ A direct codebase audit or pen-test request uses full audit mode. Questions and 
 ## Development
 
 ```bash
-node --test skills/industrial-audit/*.test.cjs   # validator tests (Linux/macOS/WSL)
+node --test skills/industrial-audit/*.test.cjs   # validator tests
 node scripts/check-skill.cjs                     # companion template, links, README table, unique class names
 ```
 

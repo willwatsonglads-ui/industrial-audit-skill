@@ -15,10 +15,10 @@ const {
 const validatorPath = path.join(__dirname, "validate-findings.cjs");
 const CLI_TIMEOUT_MS = 5000;
 const HOSTILE_CLI_TIMEOUT_MS = 15000;
-const HAS_SAFE_INPUT_OPEN = Number.isInteger(fs.constants.O_NOFOLLOW) &&
+const HAS_SAFE_INPUT_OPEN = process.platform === "win32" || (Number.isInteger(fs.constants.O_NOFOLLOW) &&
   fs.constants.O_NOFOLLOW !== 0 &&
   Number.isInteger(fs.constants.O_NONBLOCK) &&
-  fs.constants.O_NONBLOCK !== 0;
+  fs.constants.O_NONBLOCK !== 0);
 const TERMINAL_CONTROL_PAYLOAD = "\u001b\u0007\u0085\u202e\u034f\ufe0f";
 const TERMINAL_CONTROL_BYTES = [
   Buffer.from([0x1b]),
@@ -733,5 +733,35 @@ test("keeps shared helpers aligned with the coverage-ledger validator", () => {
       ledgerModule.hasVisibleProse(value),
       `prose verdict diverges for ${JSON.stringify(value)}`,
     );
+  }
+});
+
+test("Windows CLI rejects a symlink and a device path without following them", { skip: process.platform !== "win32" }, (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "validate-findings-windows-"));
+  const targetPath = path.join(directory, "target.json");
+  const symlinkPath = path.join(directory, "input.json");
+  try {
+    fs.writeFileSync(targetPath, "[]");
+    const winPath = (value) => value.split("/").join(path.win32.sep);
+    for (const devicePath of [winPath("//./NUL"), "//./NUL", winPath("//?/") + targetPath, path.win32.toNamespacedPath(targetPath)]) {
+      const result = spawnSync(process.execPath, [validatorPath, devicePath], { encoding: "utf8", timeout: CLI_TIMEOUT_MS });
+      assert.equal(result.status, 1, cliOutput(result));
+      assert.match(cliOutput(result), /input must be a regular file/);
+    }
+    try {
+      fs.symlinkSync(targetPath, symlinkPath, "file");
+    } catch (error) {
+      if (error && error.code === "EPERM") {
+        t.diagnostic("symlink creation needs Developer Mode or admin rights; symlink case not exercised");
+        return;
+      }
+      throw error;
+    }
+    const result = spawnSync(process.execPath, [validatorPath, symlinkPath], { encoding: "utf8", timeout: CLI_TIMEOUT_MS });
+    assert.equal(result.status, 1, cliOutput(result));
+    assert.match(cliOutput(result), /input must not be a symlink/);
+    assert.doesNotMatch(cliOutput(result), /stack|at validate-/i);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
   }
 });

@@ -14,7 +14,14 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - There are still three `oneOf` branches, in the same order.
 - `validate-findings.cjs`: one new semantic check. A `data_integrity` `confirmed` or `needs_validation` record requires `data_path`, and a `security` record must not have one. Nothing else changed: no new schema keywords, and the same input limits and safe-open behaviour.
 - `validate-findings.test.cjs`: the existing fixtures carry `kind: "security"`. There are three new tests for the new fields, the kind/`data_path` pairing, and malformed values.
-- `validate-coverage-ledger.cjs` and its tests: unchanged. Industrial companion classes use the existing `FILE.md#<class name>` references.
+- `validate-coverage-ledger.cjs`: no schema or ledger changes. Industrial companion classes use the existing `FILE.md#<class name>` references.
+- Both validators run on Windows. Upstream refuses all input where Node lacks `O_NOFOLLOW` and `O_NONBLOCK`. The fork keeps that open path wherever the flags exist, and adds a Windows fallback in `openInputDescriptor`:
+  - refuse device and namespace paths (`\\.\`, `\\?\`);
+  - `lstat` the leaf, and refuse symlinks and anything that is not a regular file;
+  - open read-only;
+  - require the opened handle to have the same volume and file ID as the checked path, so a swap between the check and the open is refused.
+
+  Other platforms without the flags still refuse all input. The test suites treat Windows as a safe-open platform and add a Windows test for symlink and device-path refusal. CI runs on Linux, Windows, and macOS.
 
 ## Prose
 - `SKILL.md`:
@@ -58,5 +65,5 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - `GOVERNANCE-CONFIGURATION-AND-CHANGE.md`
 - `STANDARDS.md`: a crosswalk from the industrial classes to standards identifiers, each checked against a public source. Paywalled standards are cited by identifier only.
 - `scripts/check-skill.cjs`: structural checks for companion headings, selection-list links, the README file table, and unique class names.
-- `.github/workflows/test.yml`: runs the validator tests and the structure check on Linux.
+- `.github/workflows/test.yml`: runs the validator tests and the structure check on Linux, Windows, and macOS.
 - This file.

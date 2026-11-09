@@ -718,21 +718,50 @@ function collectUnitErrors(unit, index) {
   return errors;
 }
 
-function readFileWithinLimit(file) {
-  const noFollow = fs.constants.O_NOFOLLOW;
-  const nonBlock = fs.constants.O_NONBLOCK;
-  if (!Number.isInteger(noFollow) || noFollow === 0 || !Number.isInteger(nonBlock) || nonBlock === 0) {
-    // Node exposes no race-safe fallback on these platforms, so reject all inputs.
-    throw new SafeInputError("OS no-follow and nonblocking input protection is unavailable");
-  }
+// Windows has no O_NOFOLLOW or O_NONBLOCK. Check the leaf without following it, open it,
+// then require the opened file to be the same regular file (volume and file ID) that was
+// checked, so a path swapped to a link or another file between the two calls is refused.
+const WINDOWS_DEVICE_OR_NAMESPACE_PATH = /^[\\/]{2}[.?][\\/]/;
 
-  let descriptor;
+function openWindowsInputDescriptor(file) {
+  if (WINDOWS_DEVICE_OR_NAMESPACE_PATH.test(file) || WINDOWS_DEVICE_OR_NAMESPACE_PATH.test(path.resolve(file))) {
+    throw new SafeInputError("input must be a regular file");
+  }
+  const checked = fs.lstatSync(file, { bigint: true });
+  if (checked.isSymbolicLink()) throw new SafeInputError("input must not be a symlink");
+  if (!checked.isFile()) throw new SafeInputError("input must be a regular file");
+  if (checked.ino === 0n) throw new SafeInputError("OS file identity is unavailable for this input");
+  const descriptor = fs.openSync(file, fs.constants.O_RDONLY);
   try {
-    descriptor = fs.openSync(file, fs.constants.O_RDONLY | noFollow | nonBlock);
+    const opened = fs.fstatSync(descriptor, { bigint: true });
+    if (!opened.isFile() || opened.dev !== checked.dev || opened.ino !== checked.ino) {
+      throw new SafeInputError("input changed while it was being opened");
+    }
   } catch (error) {
-    if (error && (error.code === "ELOOP" || error.code === "EMLINK")) throw new SafeInputError("input must not be a symlink");
+    fs.closeSync(descriptor);
     throw error;
   }
+  return descriptor;
+}
+
+function openInputDescriptor(file) {
+  const noFollow = fs.constants.O_NOFOLLOW;
+  const nonBlock = fs.constants.O_NONBLOCK;
+  if (Number.isInteger(noFollow) && noFollow !== 0 && Number.isInteger(nonBlock) && nonBlock !== 0) {
+    try {
+      return fs.openSync(file, fs.constants.O_RDONLY | noFollow | nonBlock);
+    } catch (error) {
+      if (error && (error.code === "ELOOP" || error.code === "EMLINK")) throw new SafeInputError("input must not be a symlink");
+      throw error;
+    }
+  }
+  if (process.platform === "win32") return openWindowsInputDescriptor(file);
+  // Node exposes no race-safe fallback on other platforms without these flags, so reject all inputs.
+  throw new SafeInputError("OS no-follow and nonblocking input protection is unavailable");
+}
+
+function readFileWithinLimit(file) {
+  const descriptor = openInputDescriptor(file);
   try {
     const stat = fs.fstatSync(descriptor);
     if (!stat.isFile()) throw new SafeInputError("input must be a regular file");
