@@ -2,7 +2,7 @@
 
 ### Phase 1: Map the source and plan coverage
 
-The parent initializes `run-metadata.json`, applies the strict pre-reconnaissance budget gate in `SKILL.md`, then creates agent scratch roots and the shared ledger before hunting. If the gate fails, record the incomplete status in metadata and launch no reconnaissance agent. Reconnaissance reads the target and locally available build/configuration state only. It does not contact deployed endpoints, external identity providers, registries, brokers, cloud APIs, or other shared services.
+The parent initializes `run-metadata.json`, applies the strict pre-reconnaissance budget gate in `SKILL.md`, then creates agent scratch roots and the shared ledger before hunting. If the gate fails, record the incomplete status in metadata and launch no reconnaissance agent. Reconnaissance reads the target and locally available build/configuration state only. It does not contact deployed endpoints, external identity providers, registries, brokers, cloud APIs, plant networks, controllers, historians, gateways, or other shared services.
 
 Launch several `research` agents in parallel. They return structured facts to the parent and do not write files.
 
@@ -16,6 +16,7 @@ Read the target at <target>. Do not use network access. Return:
 4. Exact build and test commands that could run offline with local dependencies, their expected write locations, and the target-controlled inputs they process. Do not run them during reconnaissance.
 5. Comparable software or protocol visible from local documentation and dependencies. If no useful comparison is source-grounded, say so.
 6. Missing local toolchains or runtime facts that limit bounded execution.
+7. Plant role, where present: which plant functions the software serves (historian, SCADA/HMI, MES, batch, LIMS, maintenance, quality records, edge gateway, analytics, AI assistant), the plant systems it reads from or writes to, and the recorded fixtures, simulators, or test servers the repository ships for them.
 Return only source facts with repository-relative file:line references.
 ```
 
@@ -26,7 +27,7 @@ Read all source that establishes identity, authorization, isolation, and privile
 1. Each lower-trust principal and the actions it has by design.
 2. Authentication or peer identity at each entry surface.
 3. Per-resource authorization and tenant/owner scope.
-4. Process, browser, workload, CI, plugin, model/tool, device, or local-IPC authority.
+4. Process, browser, workload, CI, plugin, model/tool, device, or local-IPC authority, and plant authority: controller, SCADA/HMI, historian, gateway, broker, engineering workstation, edge device, and every role that can approve, sign, release, shelve, acknowledge, or change configuration.
 5. Privilege changes, confirmation, revocation, recovery, and fallback paths.
 6. Which controls are source-visible and which depend on an unobserved deployment fact.
 Return trust boundaries and control locations with repository-relative file:line references. Do not infer live reachability.
@@ -37,7 +38,9 @@ Return trust boundaries and control locations with repository-relative file:line
 ```text
 Inventory every source-visible place external or lower-trust input enters:
 - HTTP/browser, RPC/message/protocol, files/archive/document, CLI/env/config, plugins/dependencies/CI, cloud events/IAM selectors, model context/tool arguments, mobile/deep-link/webview, and local IPC.
+- Plant surfaces: industrial protocol sessions and subscriptions (OPC UA, MQTT and Sparkplug, fieldbus gateways), historian reads, writes, and backfill, lab, batch, maintenance, and ERP imports, recipe and configuration files, and operator displays, alarms, notifications, and exports.
 For each surface, follow major transformations, stored or derived copies, and security-relevant sinks. Record source-visible limits and parallel paths to the same effect.
+For plant data, also follow each value's timestamp, unit, quality, and tag identity from the source to every screen, record, report, model input, and automated action, and record where any of them is dropped, converted, defaulted, aggregated, or replaced. List every path that can send a write, command, method call, download, or mode change toward a plant system, including disabled, flag-gated, and test-only paths.
 Return repository-relative paths and line numbers. Be complete, but do not execute or send inputs.
 ```
 
@@ -72,7 +75,7 @@ State paths and source refs used in `run-metadata.json`. Summarize only the cove
 
 ## Architecture summary and companion selection
 
-The parent synthesizes `<output-dir>/architecture.md`, with a hard cap of about 1,000 words. Include:
+The parent synthesizes `<output-dir>/architecture.md`, with a hard cap of about 1,000 words, or about 1,300 when item 9 applies. Include:
 
 1. Product, principals, normal authority, and protected resources.
 2. The comparable-software baseline from Agent 1a, when one is source-grounded: what security trade-offs the comparable accepts. Use it to calibrate effort and severity, never to dismiss a demonstrated finding; if the comparable shares a defect pattern that has mattered in practice, that strengthens the finding. Omit this line when no meaningful comparable exists.
@@ -82,6 +85,14 @@ The parent synthesizes `<output-dir>/architecture.md`, with a hard cap of about 
 6. Repository-relative starting paths.
 7. Prior coverage gaps, changed-source and blocked revalidation targets, and same-source confirmed exclusions.
 8. A short companion-selection summary derived from [ATTACK-CLASSES.md](ATTACK-CLASSES.md): selected files and the source-visible boundaries that require them.
+9. Plant placement, when the target serves a plant:
+   - the network level or zone the software is built to run in, as the source or its documentation states it;
+   - data flows up from and down toward control systems;
+   - every write path toward control, with its gate;
+   - each clock and time source that stamps data or records;
+   - the regulated or release records the software creates and the rule the repository says governs them.
+
+   Mark deployment facts that source cannot establish as needs-validation input. Never treat them as settled.
 
 Keep the assignment-level ordinary block, selected companion blocks, and excluded blocks with reasons in each ledger unit, not in `architecture.md`. This keeps the architecture cap valid for large runs and makes the exact hunter prompt map machine-checkable.
 

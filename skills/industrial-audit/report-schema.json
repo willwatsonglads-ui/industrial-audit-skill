@@ -5,11 +5,16 @@
     "oneOf": [
       {
         "type": "object",
-        "description": "A source-grounded vulnerability that was independently demonstrated.",
+        "description": "A source-grounded vulnerability or data-integrity defect that was independently demonstrated.",
         "properties": {
           "verdict": {
             "type": "string",
             "const": "confirmed"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["security", "data_integrity"],
+            "description": "security: a trust-boundary failure. data_integrity: a value, time, unit, quality, identity, or record state reaches a person, record, or automated action differently from what the source produced, without a visible indication."
           },
           "fingerprint": {
             "type": "string",
@@ -104,7 +109,7 @@
               "properties": {
                 "kind": {
                   "type": "string",
-                  "enum": ["authentication_level", "authorization_role", "user_interaction", "system_configuration", "network_routing", "environmental_dependency", "data_state", "timing_dependency", "third_party_dependency"]
+                  "enum": ["authentication_level", "authorization_role", "user_interaction", "system_configuration", "network_routing", "environmental_dependency", "data_state", "timing_dependency", "third_party_dependency", "process_state", "network_zone", "physical_access", "engineering_mode", "time_source"]
                 },
                 "description": {
                   "type": "string",
@@ -113,6 +118,63 @@
                 }
               },
               "required": ["kind", "description"],
+              "additionalProperties": false
+            }
+          },
+          "data_path": {
+            "type": "object",
+            "description": "Required for data_integrity findings and forbidden for security findings. Names where the data came from, what changed it, where it landed, who or what used it, and which decision it informs.",
+            "properties": {
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "visibleContent": true
+              },
+              "transformations": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "visibleContent": true
+                }
+              },
+              "destination": {
+                "type": "string",
+                "minLength": 1,
+                "visibleContent": true
+              },
+              "consumer": {
+                "type": "string",
+                "minLength": 1,
+                "visibleContent": true
+              },
+              "decision_affected": {
+                "type": "string",
+                "minLength": 1,
+                "visibleContent": true
+              }
+            },
+            "required": ["source", "transformations", "destination", "consumer", "decision_affected"],
+            "additionalProperties": false
+          },
+          "references": {
+            "type": "array",
+            "uniqueItems": true,
+            "description": "Optional standards identifiers from STANDARDS.md. Identifiers only; never quote paywalled text.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "framework": {
+                  "type": "string",
+                  "enum": ["IEC-62443-3-2", "IEC-62443-3-3", "IEC-62443-4-1", "IEC-62443-4-2", "NIST-SP-800-82r3", "MITRE-ATTACK-ICS", "21-CFR-11", "EU-GMP-Annex-11", "ALCOA+", "ISA-18.2", "ISA-101", "OWASP-LLM", "OWASP-Agentic", "CISA-AI-OT", "NIST-AI-RMF", "EU-AI-Act", "OPC-UA", "Sparkplug-B", "MQTT-5"]
+                },
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "visibleContent": true
+                }
+              },
+              "required": ["framework", "id"],
               "additionalProperties": false
             }
           },
@@ -240,7 +302,7 @@
             "additionalProperties": false
           }
         },
-        "required": ["verdict", "fingerprint", "title", "description", "root_cause", "intended_behavior", "trace", "evidence", "conditions", "execution", "remediation", "severity", "confidence"],
+        "required": ["verdict", "kind", "fingerprint", "title", "description", "root_cause", "intended_behavior", "trace", "evidence", "conditions", "execution", "remediation", "severity", "confidence"],
         "additionalProperties": false
       },
       {
@@ -250,6 +312,11 @@
           "verdict": {
             "type": "string",
             "const": "needs_validation"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["security", "data_integrity"],
+            "description": "security: a trust-boundary failure. data_integrity: a value, time, unit, quality, identity, or record state reaches a person, record, or automated action differently from what the source produced, without a visible indication."
           },
           "fingerprint": {
             "type": "string",
@@ -330,6 +397,63 @@
               "additionalProperties": false
             }
           },
+          "data_path": {
+            "type": "object",
+            "description": "Required for data_integrity findings and forbidden for security findings. Names where the data came from, what changed it, where it landed, who or what used it, and which decision it informs.",
+            "properties": {
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "visibleContent": true
+              },
+              "transformations": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "visibleContent": true
+                }
+              },
+              "destination": {
+                "type": "string",
+                "minLength": 1,
+                "visibleContent": true
+              },
+              "consumer": {
+                "type": "string",
+                "minLength": 1,
+                "visibleContent": true
+              },
+              "decision_affected": {
+                "type": "string",
+                "minLength": 1,
+                "visibleContent": true
+              }
+            },
+            "required": ["source", "transformations", "destination", "consumer", "decision_affected"],
+            "additionalProperties": false
+          },
+          "references": {
+            "type": "array",
+            "uniqueItems": true,
+            "description": "Optional standards identifiers from STANDARDS.md. Identifiers only; never quote paywalled text.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "framework": {
+                  "type": "string",
+                  "enum": ["IEC-62443-3-2", "IEC-62443-3-3", "IEC-62443-4-1", "IEC-62443-4-2", "NIST-SP-800-82r3", "MITRE-ATTACK-ICS", "21-CFR-11", "EU-GMP-Annex-11", "ALCOA+", "ISA-18.2", "ISA-101", "OWASP-LLM", "OWASP-Agentic", "CISA-AI-OT", "NIST-AI-RMF", "EU-AI-Act", "OPC-UA", "Sparkplug-B", "MQTT-5"]
+                },
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "visibleContent": true
+                }
+              },
+              "required": ["framework", "id"],
+              "additionalProperties": false
+            }
+          },
           "blockers": {
             "type": "array",
             "minItems": 1,
@@ -352,12 +476,29 @@
                 "type": "string",
                 "minLength": 1,
                 "visibleContent": true
+              },
+              "runtime": {
+                "type": "object",
+                "description": "Typed hand-off for a check that needs a running system, kept out of this source-first audit.",
+                "properties": {
+                  "family": {
+                    "type": "string",
+                    "enum": ["role_matrix", "fault_injection", "protocol_conformance", "agent_injection", "configuration_review", "records_review"]
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "visibleContent": true
+                  }
+                },
+                "required": ["family", "description"],
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
           }
         },
-        "required": ["verdict", "fingerprint", "title", "description", "claimed_root_cause", "trace", "evidence", "blockers", "validation_plan"],
+        "required": ["verdict", "kind", "fingerprint", "title", "description", "claimed_root_cause", "trace", "evidence", "blockers", "validation_plan"],
         "additionalProperties": false
       },
       {
@@ -367,6 +508,11 @@
           "verdict": {
             "type": "string",
             "const": "rejected"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["security", "data_integrity"],
+            "description": "security: a trust-boundary failure. data_integrity: a value, time, unit, quality, identity, or record state reaches a person, record, or automated action differently from what the source produced, without a visible indication."
           },
           "fingerprint": {
             "type": "string",
@@ -453,7 +599,7 @@
             "visibleContent": true
           }
         },
-        "required": ["verdict", "fingerprint", "title", "description", "claimed_root_cause", "trace", "evidence", "reason"],
+        "required": ["verdict", "kind", "fingerprint", "title", "description", "claimed_root_cause", "trace", "evidence", "reason"],
         "additionalProperties": false
       }
     ]

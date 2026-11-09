@@ -1,11 +1,16 @@
 ---
-name: security-audit
-description: Security guidance and vulnerability review for codebases, APIs, services, CLI tools, libraries, and daemons. Use for security questions, focused reviews, vulnerability research, security audits, or pen tests. Run the complete workflow only for explicit codebase audit or pen-test requests, full/comprehensive/end-to-end reviews, or requested report artifacts.
+name: industrial-audit
+description: Security and data-integrity review for software deployed in manufacturing and process plants, including AI in plant operations. Covers historians, SCADA and HMI software, MES, LIMS, maintenance and batch-record systems, OPC UA, MQTT and Sparkplug, fieldbus gateways, edge devices, plant data pipelines, operator displays and alarms, regulated electronic records (21 CFR Part 11, EU GMP Annex 11), and AI agents or models that read or act on plant data. Also covers ordinary codebases, APIs, services, CLI tools, libraries, and daemons. Use for security or data-integrity questions, focused reviews, OT security reviews, audit-trail reviews, vulnerability research, security audits, or pen tests. Run the complete workflow only for explicit codebase audit or pen-test requests, full/comprehensive/end-to-end reviews, or requested report artifacts.
 ---
 
-# Security Audit
+# Industrial Audit
 
-Find vulnerabilities that violate a real trust boundary, then give owners the source evidence, safe reproduction, priority, and smallest effective fix. This is a defensive, source-first workflow. A candidate without a concrete affected principal, resource, or security outcome is not a confirmed finding.
+Find two kinds of defect, then give owners the source evidence, safe reproduction, priority, and smallest effective fix:
+
+- **`security`** — a vulnerability that violates a real trust boundary.
+- **`data_integrity`** — a value, timestamp, unit, quality, identity, or record state that reaches a person, a record, or an automated action differently from what the source produced, with no visible indication.
+
+This is a defensive, source-first workflow. A security candidate without a concrete affected principal, resource, or security outcome is not a confirmed finding. A data-integrity candidate without a concrete data path and a wrong received result is not a confirmed finding.
 
 ## Operating modes
 
@@ -39,6 +44,16 @@ These rules apply in both operating modes. Source inspection is read-only. Run t
 
 The agent, outside the target-controlled process, may make a disposable source copy in an assigned `scratch/` directory when a build must write beside source. In guidance mode, do not retain target-controlled files. In full audit mode, only trusted parent-side code may promote the minimum non-secret result to retained `artifacts/` using the procedure under Write isolation. Never expose a retained output directory (other than the agent's own assigned `scratch/`), another agent's directory, the host home directory, credentials, sockets, or shared services to target code. Do not install dependencies or let builds fetch them. Use only tools and dependencies already available locally. If every control cannot be enforced, do not execute target code: report the missing sandbox capability as a needs-validation blocker and give a safe validation plan.
 
+### Plant systems
+
+Plant systems add rules that no sandbox relaxes:
+
+- Never connect to a live plant network, controller, gateway, historian, broker, OPC UA server, or field device, including read-only connections. Reads load devices, subscriptions hold resources, and browsing can trigger device polls.
+- Use only recorded fixtures, simulators, and test servers that the target repository ships, run inside the sandbox on isolated loopback.
+- Send no write, command, method-call, download, mode-change, or rebirth request even to a simulator, beyond the single dummy message needed to show that the path exists. Prefer proving the path from source.
+- Functional safety is out of scope. Do not assess safety instrumented systems, interlocks, or safety integrity claims. Any lead that touches them is `needs_validation`, with the safety system's owner named in the blocker.
+- Physical plant behavior is never an observed result. Stop at the value, message, record, or display state that the software produces.
+
 Use dummy principals, fixtures, and secrets. Do not probe deployed endpoints, external services, shared infrastructure, production identities, other users' data, or live control planes. Do not test availability against a live or shared process, publish artifacts, alter releases, spend paid API quota, or continue beyond the minimum local effect needed to establish a defect. If the decisive fact is outside source or the sandboxed fixture, report it as needing validation.
 
 ## Full audit setup
@@ -48,7 +63,7 @@ In full audit mode, resolve these values before reconnaissance:
 - **Skill directory**: the absolute directory containing this `SKILL.md`.
 - **Target**: the absolute repository root under review.
 - **Repo name**: a stable repository identifier from the directory or local Git remote.
-- **Output directory**: a new writable directory outside the target, defaulting to `~/security-audit-skill/<repo-name>/run-<N>`, where `<N>` is the next unused integer. Use a directory inside the target only when the user explicitly selects it and the parent verifies that version control ignores the whole directory. Otherwise stop and request an external path.
+- **Output directory**: a new writable directory outside the target, defaulting to `~/industrial-audit-skill/<repo-name>/run-<N>`, where `<N>` is the next unused integer. Use a directory inside the target only when the user explicitly selects it and the parent verifies that version control ignores the whole directory. Otherwise stop and request an external path.
 - **Source ref**: the reviewed commit and whether the worktree is dirty. Do not treat unreviewed generated or modified files as another revision.
 
 ### Write isolation
@@ -139,6 +154,27 @@ A strict total-agent budget can still be exceeded by an unexpectedly large candi
 
 For every candidate, name the lower-trust principal, accepted input or action, intended control, crossed boundary, affected principal or resource, and concrete observed or owner-observable result. Do not elevate a missing best practice, guessed deployment behavior, generic parser crash, or self-impact into a security finding.
 
+### Require a data path and a wrong result
+
+Set `kind` on every record. For every `data_integrity` candidate, name:
+
+- the source and what it produced: value, timestamp, unit, quality, identity, or record state;
+- each transformation on the way;
+- the destination: screen, record, report, model input, or automated action;
+- the consumer: a person role, a record, or a program;
+- the decision that the result informs;
+- the concrete difference between what the source produced and what the consumer received.
+
+The finding stands only when the difference is invisible to the consumer, or when it is flagged in a way that tells the consumer the wrong thing. No attacker is required: the trigger may be an ordinary plant condition such as a communication fault, a clock change, a restart, a late sample, or a renamed tag. Record that trigger in `execution.attacker_perspective` and in `conditions`.
+
+Do not elevate the following into a data-integrity finding:
+- a style preference;
+- a missing feature;
+- a precision choice that no decision depends on;
+- a difference the consumer can already see.
+
+A practice that a standard recommends is not a finding until a wrong result reaches a consumer.
+
 ### Use bounded local evidence
 
 Static analysis establishes the source path. Sandboxed local tests resolve behavior when all execution controls are available: a minimal function harness, existing unit test, small parser fixture, dummy-tenant integration test, locally rendered configuration, or bounded isolated-loopback client. Stop at a wrong return value, unauthorized dummy record, sanitizer finding, policy difference, or other minimum effect. Do not extend the local check beyond the minimum boundary result or produce persistence, post-fault, or concealment material.
@@ -151,15 +187,25 @@ Deployment controls, proxy behavior, provider settings, browser headers, identit
 
 Only `confirmed` records receive severity. Likelihood and impact must reflect the demonstrated conditions and result; overall severity cannot exceed demonstrated impact. `needs_validation` means a specific source-grounded boundary hypothesis is blocked, not a low-confidence confirmed vulnerability, and it has no severity.
 
-Calibrate overall severity with these anchors:
+Calibrate overall severity for `security` records with these anchors:
 
-- **critical** — an unauthenticated actor gains code execution, full data-store access, or takeover of arbitrary accounts.
-- **high** — an actor fully defeats an explicit security control with real consequences: authentication bypass, cross-tenant read or write, stored script execution affecting other users, authenticated code execution, or an unauthenticated remote stop of a shared service.
+- **critical** — an unauthenticated actor gains code execution, full data-store access, or takeover of arbitrary accounts; or any actor without the intended authority causes a write to a control value, recipe, program, or operating mode.
+- **high** — an actor fully defeats an explicit security control with real consequences: authentication bypass, cross-tenant or cross-site read or write, stored script execution affecting other users, authenticated code execution, an unauthenticated remote stop of a shared service, a bypass of a write-approval or signature step, or an undetectable change to an audit trail.
 - **medium** — a real boundary violation with limited blast radius, uncommon preconditions, or consequences confined to a narrow resource set.
 - **low** — disclosure of non-secret internals, or an effect requiring sustained effort for minimal gain.
 - **informational** — a confirmed but minimal-impact observation, useful mainly as a prerequisite inside a larger finding.
 
 The high/medium discriminator: does the demonstrated result fully defeat an explicit control for an action with real consequences, or only weaken it? If you cannot state the concrete damage, the severity is lower than it feels.
+
+Calibrate overall severity for `data_integrity` records by the decision the wrong result reaches:
+
+- **critical** — a silently wrong value, time, unit, quality, or identity enters a release, batch, quality, or other regulated record, or drives an automated action that changes the process.
+- **high** — a silently wrong result is shown as current and valid on a surface people use for operating decisions, or an audit-trail entry is lost, misattributed, or altered.
+- **medium** — the result is wrong but flagged in a misleading way, needs an uncommon plant condition, or is confined to analysis, reporting, or model training data.
+- **low** — a precision, rounding, or format difference that can mislead a careful reader but changes no decision shown in the trace.
+- **informational** — a confirmed difference with no decision impact, useful mainly as a prerequisite inside a larger finding.
+
+The high/medium discriminator for data integrity: would a competent consumer, using only what the software shows, act on the wrong result? Never rate by the physical consequence a wrong decision might have. The software result is the observed result, and functional safety is out of scope.
 
 ### Recommend the smallest effective source fix
 
@@ -190,3 +236,6 @@ Do not end the run before one of exactly two terminal states: (a) all Phase 6 ar
 8. Re-reporting carried same-source prior confirmed records or using them as exemplars that anchor the hunt.
 9. Assigning severity to `needs_validation` records.
 10. Writing the report before independent verification or letting prose and JSON disagree.
+11. Connecting to a live plant system, or treating a simulator's behavior as proof of what a real device does.
+12. Presenting conformance to a standard as a finding, or claiming that a target is compliant. The audit reports demonstrated results, never certification.
+13. Rating a data-integrity record by an imagined physical consequence instead of the decision the wrong result reaches.

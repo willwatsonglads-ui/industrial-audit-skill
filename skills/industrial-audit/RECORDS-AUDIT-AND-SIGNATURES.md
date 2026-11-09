@@ -1,0 +1,90 @@
+# Records, Audit-Trail, and Signature Hunting
+
+#### When to use this file
+
+Reach for this file when the target creates, changes, signs, reviews, releases, retains, archives, or copies records that its owner treats as evidence: audit trails, electronic signatures, batch and release records, lab results, deviations, inspection and test records, management-of-change records, incident investigations, and certified copies or printouts of any of them. The data path that triggers selection is a record write, a signature, a state transition toward release, or a copy that leaves the system. Use `PROCESS-DATA-INTEGRITY.md` for process values that lose time, unit, quality, or identity before they enter a record, `DATA-ISOLATION-AND-LIFECYCLE.md` for generic retention, deletion, export scope, and restore authority, `WEB-PROTOCOL-AND-AUTH.md` for session, MFA, and step-up mechanics, and `ALARMS-HMI-AND-DISPLAY.md` for live screens and trends people act on. The classes here produce both kinds: a tamper or bypass path is `security`, and a trail or record that comes out incomplete or wrong under ordinary operation is `data_integrity`.
+
+Split large systems by record family, write path (UI, API, import, job, migration, admin tool), signature and release workflow, and copy path (export, printout, archive, backup, restore).
+
+## Core discipline (include in every agent prompt for this domain)
+
+```
+- The audit reports demonstrated behaviour, never compliance. Do not state that a system is or is not Part 11 or Annex 11 compliant, and do not report a missing practice that a regulation or guidance recommends until a wrong, lost, misattributed, or alterable record is shown.
+- Take the target's own claims as the contract: what its schema, UI, documentation, or tests say is audited, signed, required, separated, retained, or tamper-evident. A defect is a path where that claim does not hold.
+- Enumerate every writer of each record and each audit table before judging completeness: UI handlers, API routes, bulk import, admin consoles, CLI maintenance commands, migrations, sync connectors, triggers, and background jobs.
+- An audit entry must let a reviewer reconstruct who did what, when, why, and what the value was before and after. Read the entry as the reviewer sees it, through the reviewer's screen or export, not only the stored row.
+- Prove tampering, replay, and bypass with dummy users, dummy records, and in-memory or sandboxed stores only. Never touch a live quality, batch, maintenance, or historian system, and stop at the altered or missing record.
+- Use `confirmed` only when source and a bounded local test show the record, trail, or signature state a reviewer would receive and how it differs from what happened. Use `needs_validation` when the decisive fact lives in database grants, storage lifecycle rules, backup tooling, identity-provider policy, or a procedure outside the repository, and name that fact.
+```
+
+## Audit-trail completeness attack classes (subagent_type: `general`)
+
+**Audit-entry content gaps**
+An audit entry for a create, change, or delete omits the acting user, the action, the record and field, the server time, the reason where one is required, or the old and new values, so a reviewer cannot reconstruct the event. Read the audit schema and every function that writes it, then compare the stored fields with what the record type carries, such as equipment identifier, performer, inspection result, method, unit, or batch. Check entries that store only the new value, a diff that omits unchanged-but-relevant context, a record ID without version, or a user ID that later resolves to a different person after renames or account reuse. Usually `data_integrity`; a field the product never claims to record is a feature gap unless a reviewer screen implies it is shown.
+
+**Unaudited write paths**
+Some path changes an audited record without producing the entry that the interactive path produces: bulk import, spreadsheet upload, admin console, raw-query or bulk-update calls that skip model-level hooks, migrations and backfills, sync connectors that upsert, background recalculation jobs, triggers disabled during load, or an API route that differs from the UI route. Grep every write to each audited table and compare it with the audit hook the UI path calls, including ORM save hooks, service-layer wrappers, and database triggers. Check whether the bypass path is reachable by ordinary roles at runtime or only by deploy-time tooling. Usually `data_integrity`; it is `security` when a role the trail is meant to record can choose the unaudited path to make an untraced change.
+
+**Audit entry outside the change transaction**
+The audit entry and the change it records commit separately, so a crash, timeout, exception, or rollback leaves a change without its entry or an entry for a change that never happened. Trace whether both writes share one database transaction or a durable outbox written in that transaction, and look for after-commit hooks, fire-and-forget queue publishes, audit writes to a different store, swallowed exceptions around the audit call, and entries written before a write that can still fail. Reproduce with a local store and an injected failure between the two writes. Usually `data_integrity`; asynchronous delivery from a same-transaction outbox with retry is not a defect.
+
+**Skippable or defaulted reason for change**
+The software requires a reason for a change type, but some path accepts it empty, whitespace, a prefilled default, a reason captured once for a whole batch of unrelated edits, or a reason held only in client state and never stored with the entry. Compare the UI validation with the API schema, import mapping, and service-layer check, and verify the stored reason is attached to the specific change it explains. Usually `data_integrity`; a change type for which the product never asks a reason is not a defect.
+
+## Tamper evidence, time, and attribution attack classes (subagent_type: `general`)
+
+**Audit-trail mutability by the recorded role**
+The role whose actions the trail records can edit, delete, truncate, or reconfigure that trail, so a person can remove the evidence of their own change. Read database grants and the application's database role, audit-table routes with update or delete verbs, admin screens that clear or filter logs at the source, retention settings editable by the same administrator, and ORM cascades that delete audit rows with their parent record. Check whether a separate, independently controlled store or role holds the trail. Usually `security`; a cascade or cleanup that loses entries under ordinary use is `data_integrity`, and grants that live outside the repository make the candidate `needs_validation`.
+
+**Hash-chain re-chain, truncation, and unrun verification**
+The software claims tamper evidence through hashes, chained entries, or signatures, but the writer or an administrator holds everything needed to recompute the chain after an edit, the tail can be truncated with no external anchor or count to detect it, or the verification routine has no production caller. Find where the chain key, seed, or head is stored and who can read it, whether the latest head or entry count is published anywhere the writer cannot alter, and whether verification runs on read, on schedule, or only in tests, and what happens when it fails. Edit and truncate a local fixture chain and observe whether any shipped code path reports it. Usually `security`; the absence of a hash chain is not a defect unless the product claims one.
+
+**Audit-entry clock and time-zone gaps**
+The "when" of an audit entry or signature comes from a request field, a browser or edge-device clock, a job's start time rather than its write time, or local time stored without its offset, so entries can be backdated, reordered, or read in the wrong zone. Trace each timestamp in the audit and signature tables to its source, and check time-zone handling at storage, display, and export, including daylight-saving transitions and services that write in different zones. Usually `data_integrity`; it is `security` when a caller can supply the recorded time, and timestamps on process values belong in `PROCESS-DATA-INTEGRITY.md`.
+
+**Shared-account and proxy-identity attribution loss**
+The trail names an account that cannot identify one person: a shared or generic login with write access, a service account that acts for many users, an automation or agent action recorded as "system" with no initiating user, or impersonation and delegation that record only one of the two people involved. Read how the acting identity is chosen for each write path, including job runners, integration credentials, kiosk modes, and support tooling, and compare it with the person who caused the action. Shared accounts limited to read-only viewing are not a defect. Usually `data_integrity`; it is `security` when impersonation lets one person act while the trail names another.
+
+## Electronic signature and release attack classes (subagent_type: `general`)
+
+**Signature manifestation gaps**
+A signed record, as shown on screen, printed, or exported, omits the signer's printed name, the date and time of signing, or the meaning of the signature, such as review, approval, responsibility, or authorship. Check the signature schema and every renderer, and look for names resolved from the current user table at display time, so a rename or reused account rewrites historic signatures, times shown without zone, and a generic "signed" in place of a stored meaning. Usually `data_integrity`; a manifestation that the stored row carries but one export drops is a finding on that export path.
+
+**Signature-to-record-version binding gaps**
+A signature references a record ID rather than the exact signed content or version, so an edit after signing keeps the signature, or a clone, template, or copy carries a signature onto a record the signer never saw. Trace what the signature row stores, whether any record write checks for existing signatures and invalidates or blocks them, and whether recalculation jobs, unit migrations, or attachment replacement change signed content. Edit a locally signed fixture and observe whether the reviewer screen still shows it as signed. Usually `security`, since it bypasses an approval; an ordinary system recalculation that silently changes signed content is `data_integrity`.
+
+**Signature replay and re-authentication gaps**
+A signing credential, challenge, or token can be reused for another record, meaning, or user, or the signing step completes without the re-authentication the software itself requires, so a signature is attributed to a person who did not perform it. Check whether challenges are one-time and bound to signer, record version, and meaning; whether the signing request can name a different signer than the authenticated session; whether batch signing applies one authentication to records the signer was not shown; and whether a remembered session or single-sign-on token satisfies a step the product describes as fresh credential entry. Use `WEB-PROTOCOL-AND-AUTH.md#Step-up binding and bypass` for the generic challenge mechanics. Usually `security`; a session-only signing flow the product documents as such is not a defect by itself.
+
+**Release sequencing and separation-of-duties bypass**
+A batch, lot, result, or change record reaches released or approved state before the reviews, signatures, or open-deviation checks the workflow requires, or the person who performed the work also approves it where the software claims to separate those roles. Map the state machine and find every transition into release, including API routes, mass-assignable status fields, admin overrides, imports, and resumed workflows, and verify each checks required prior states. Check whether separation compares user identity rather than role, and whether delegation, impersonation, or role change mid-workflow defeats it. Usually `security`; two accounts held by one person cannot be detected from source and are not a finding.
+
+## Correction, retention, and copy attack classes (subagent_type: `general`)
+
+**Correction and deletion that obscure prior values**
+A correction overwrites a value in place with no entry keeping the old one, a delete removes the record together with its trail, or a soft-delete, void, or supersede flag is set through a path that writes no entry, so a reviewer cannot see what was there before. Compare edit, delete, void, and undo handlers with the audit hook, and check that the reviewer's history view shows superseded values. Usually `data_integrity`; deleted records that stay visible or actionable belong in `DATA-ISOLATION-AND-LIFECYCLE.md#Soft-delete and tombstone bypass`.
+
+**Record-life retention shortfall**
+A record or its audit trail becomes unavailable or unreadable before the end of the record's own retention period: a purge job selects by age across record types, the trail sits in logs or traces with a shorter time-to-live, a format migration drops fields or leaves old records unreadable, or a privacy-erasure path deletes regulated records or anonymizes the signer and actor in their trail. Read purge and lifecycle code, log and trace retention settings, migration scripts, and erasure handlers, and compare each period with the retention the target configures for the record. Usually `data_integrity`; external storage lifecycle rules make the candidate `needs_validation`, and generic overrun of deletion belongs in `DATA-ISOLATION-AND-LIFECYCLE.md#Retention and queued-work overrun`.
+
+**Restore and archive trail loss**
+Backup, restore, and archive move records and their trails separately, so a restore brings records back without matching entries, replays entries with new times or identifiers that reorder history, or an archive holds records whose trail, signatures, or reader no longer exist. Check whether records and trail are backed up together and restored to one consistent point, whether restore and archive jobs preserve original timestamps and IDs, and whether any shipped routine checks archived data for readability and integrity. Usually `data_integrity`; restored permissions belong in `DATA-ISOLATION-AND-LIFECYCLE.md#Restore reintroduces invalid state`.
+
+**True-copy, export, and dynamic-record fidelity gaps**
+A copy presented as complete, certified, or original omits the metadata and audit trail needed to understand it, or flattens dynamic data such as a chromatogram, spectrum, or trend into a static printout that the system then keeps as the original while discarding the dynamic data. Compare each export, PDF, and printout with the stored record for units, timestamps, method and instrument identifiers, signature manifestations, and whether the data changed since original entry, and check whether exports are staged as editable files before the system stamps, attaches, or sends them. Usually `data_integrity`; it is `security` when a lower-trust user can edit a file the system then labels as a certified or true copy.
+
+## Universal moves (apply across the above)
+
+- Pick one record family and draw every writer, the audit hook each calls, the transaction boundary, the signature and release transitions, and every copy path out. Mark the acting identity and the timestamp source on each edge.
+- Run one dummy record through create, edit, sign, edit-after-sign, correct, delete, export, archive, and restore on a local store, then read the result only through the reviewer's history view and the export a reviewer would receive.
+- Start at bypass paths: imports, migrations, admin consoles, jobs, and API routes that the UI does not use. These are where audit hooks, reason prompts, and signature checks most often go missing.
+- For every tamper-evidence or separation claim in the product's documentation or UI, find the code that enforces it and the code that would detect its failure.
+
+## Validation rules (apply before reporting ANY finding here)
+
+1. Name the record family, the write, signature, or copy path, the actor or ordinary trigger, and the exact record, trail, or signature state a reviewer receives compared with what happened.
+2. Cite the target's own claim that is broken, such as an audited table, a required reason, a signature meaning, a release precondition, a separation rule, or a tamper-evidence feature. A practice the product never claims is not a finding.
+3. For bypass, mutability, and replay claims, show the path is reachable by the stated role at runtime, and confirm no trigger, outbox, grant, or later check restores the entry or rejects the action.
+4. Prove tampering, re-chaining, edit-after-sign, release bypass, and restore loss only on local fixtures and dummy users. Stop at the altered, missing, or misattributed record and never act on a live system.
+5. Never state or imply that the target is or is not compliant with an electronic-records regulation or guidance; report the demonstrated behaviour and leave the compliance judgement to the owner.
+6. Return `confirmed` only with the complete write, sign, or copy path and the observed wrong or alterable record. Return `needs_validation` with the exact database grant, storage lifecycle rule, backup procedure, identity-provider setting, or external reviewer process that decides the result.

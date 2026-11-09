@@ -4,7 +4,7 @@
 
 Select attack classes relevant to the application type. Not every class applies to every codebase. The list below is a starting point; add application-specific classes from Phase 1 and split large codebases per subsystem. Frame work as finding, validating, fixing, and prioritizing vulnerabilities. Keep validation to source review and bounded local fixtures; do not develop payload chains, test availability on live services, or take action in shared environments.
 
-Use `confirmed` only when source evidence and bounded validation establish the full boundary and meaningful result. Use `needs_validation` when a specific deployment, provider, platform, identity, or runtime fact is unavailable; state the missing fact and the safe owner-observed or local check that resolves it.
+Use `confirmed` only when source evidence and bounded validation establish the full boundary and meaningful result, or for a `data_integrity` record, the full data path and the wrong received result. Use `needs_validation` when a specific deployment, provider, platform, identity, or runtime fact is unavailable; state the missing fact and the safe owner-observed or local check that resolves it.
 
 > **Native / binary / kernel targets** (C/C++/Rust-unsafe, kernel modules, parsers and decoders, FFI, concurrent runtimes, binary loaders, JITs, firmware): use the memory-safety, integer/ABI, concurrency, binary-loader, and privileged-interface classes in [MEMORY-SAFETY-AND-BINARY.md](MEMORY-SAFETY-AND-BINARY.md).
 >
@@ -25,6 +25,22 @@ Use `confirmed` only when source evidence and bounded validation establish the f
 > **Data-isolation and lifecycle targets** (multi-tenant stores, caches/search, object links, analytics, export/backup, migration, deletion, retention, or restore): use [DATA-ISOLATION-AND-LIFECYCLE.md](DATA-ISOLATION-AND-LIFECYCLE.md).
 >
 > **Desktop, mobile, and local-IPC targets** (native apps, deep links, webview bridges, exported components, privileged helpers, local daemons, Unix sockets/XPC/Binder/D-Bus): use [DESKTOP-MOBILE-AND-LOCAL-IPC.md](DESKTOP-MOBILE-AND-LOCAL-IPC.md).
+>
+> The files below serve plant and industrial targets. Select each one for the boundary or data path its `When to use this file` section describes, not because the target is industrial.
+>
+> **OT boundary and control-write targets** (any software that can send a write, command, method call, recipe, program, or mode change toward a controller, SCADA, DCS, or field device, or that sits on a network path between business and control systems): use [OT-BOUNDARY-AND-CONTROL-WRITES.md](OT-BOUNDARY-AND-CONTROL-WRITES.md).
+>
+> **Industrial protocol and device targets** (OPC UA clients or servers, MQTT and Sparkplug producers or hosts, fieldbus gateways, historian interfaces, edge devices, or protocol translation): use [INDUSTRIAL-PROTOCOLS-AND-DEVICES.md](INDUSTRIAL-PROTOCOLS-AND-DEVICES.md).
+>
+> **Process-data integrity targets** (historians, time-series stores, ingest pipelines, tag mapping, unit conversion, aggregation, lab, batch, or maintenance data imports, or any path where plant values keep or lose their time, unit, quality, and identity): use [PROCESS-DATA-INTEGRITY.md](PROCESS-DATA-INTEGRITY.md).
+>
+> **Records, audit-trail, and signature targets** (audit trails, electronic signatures, batch and release records, quality records, change records, retention, archive, or certified copies): use [RECORDS-AUDIT-AND-SIGNATURES.md](RECORDS-AUDIT-AND-SIGNATURES.md).
+>
+> **Alarm, HMI, and display targets** (operator screens, trends, dashboards, alarm and event lists, shelving or suppression, notifications, mobile alerts, or exported reports that people act on): use [ALARMS-HMI-AND-DISPLAY.md](ALARMS-HMI-AND-DISPLAY.md).
+>
+> **AI in plant operations targets** (models, agents, or assistants that read plant data, recommend actions, draft records, or reach write paths, plus their training, evaluation, and monitoring pipelines): use [AI-IN-PLANT-OPERATIONS.md](AI-IN-PLANT-OPERATIONS.md) together with [AI-AND-LLM.md](AI-AND-LLM.md).
+>
+> **Governance, configuration, and change targets** (role and approval models, change-control workflows, multi-site configuration, remote-support access, asset inventory, offline updates, configuration backup and restore, or licensing that can stop a plant function): use [GOVERNANCE-CONFIGURATION-AND-CHANGE.md](GOVERNANCE-CONFIGURATION-AND-CHANGE.md).
 
 **Injection** (subagent_type: `general`)
 Trace untrusted input from entry point to dangerous sink. What counts as a "dangerous sink" depends on the application:
@@ -124,6 +140,8 @@ Other agents hunt subtle bugs. This agent checks the basic exposures that are ea
 - Are there any open redirects? (parameters named `redirect`, `return`, `next`, `url`, `goto`, `continue` that feed into redirects without validation)
 - Is TLS enforced? Are there any HTTP-only endpoints?
 - Are error responses in production returning stack traces, internal paths, or SQL errors?
+- For plant software: are there default or shared gateway, historian, broker, or HMI logins? Is an OPC UA endpoint or client configured with security mode or policy `None`, or set to accept any server or client certificate? Is a broker reachable without authentication, or does it grant a wildcard subscription? Does an admin or configuration web interface listen on all interfaces, or over plain HTTP?
+- For plant software: is a write, command, or simulation flag gated only by a configuration value or environment variable that a deployment could leave on? Are recorded plant fixtures, exports, or screenshots carrying real site names, tag lists, or network addresses checked into the repo?
 
 This agent does not need to be creative. It needs to be thorough and literal. Check every item. Report each result.
 

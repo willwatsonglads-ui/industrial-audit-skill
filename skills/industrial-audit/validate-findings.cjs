@@ -577,6 +577,14 @@ function collectFindingSemanticErrors(findings) {
         if (hasOwn(finding, forbidden)) errors.push(`${base}: rejected finding must not contain ${safeQuote(forbidden)}`);
       }
     }
+
+    if (verdict === "confirmed" || verdict === "needs_validation") {
+      if (finding.kind === "data_integrity" && !hasOwn(finding, "data_path")) {
+        errors.push(`${base}: data_integrity finding requires "data_path"`);
+      } else if (finding.kind === "security" && hasOwn(finding, "data_path")) {
+        errors.push(`${base}: security finding must not contain "data_path"`);
+      }
+    }
   });
 
   return errors;

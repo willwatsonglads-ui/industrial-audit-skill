@@ -4,7 +4,7 @@
 
 The parent assigns `planned` ledger units to `general` agents. Use enough focused hunters to cover the units without combining unrelated boundaries. One hunter may own closely related units in one subsystem; no unit may be silently unassigned because of an agent-count limit — a unit the budget cannot reach is explicitly `deferred` with reason `budget_cannot_reserve_critics_and_validation`.
 
-When a budget or profile caps hunter count, assign units in priority order and record the ordering rationale in the ledger. Rank by: (1) unauthenticated or lowest-trust entry surfaces before authenticated ones; (2) boundaries protecting the most valuable resources (credentials, cross-tenant data, code execution, release authority); (3) prior-run gaps, revalidation targets, and changed source before same-source re-passes; (4) units whose class historically yields confirmed findings for this target type over speculative ones. Ties break lexicographically by `coverage_id` so runs stay deterministic.
+When a budget or profile caps hunter count, assign units in priority order and record the ordering rationale in the ledger. Rank by: (1) unauthenticated or lowest-trust entry surfaces before authenticated ones; (2) boundaries protecting the most valuable resources (credentials, cross-tenant data, code execution, release authority, write paths toward control systems, regulated and release records, and operating displays); (3) prior-run gaps, revalidation targets, and changed source before same-source re-passes; (4) units whose class historically yields confirmed findings for this target type over speculative ones. Ties break lexicographically by `coverage_id` so runs stay deterministic.
 
 Before launch, the parent changes assigned units to `in_progress`, sets a canonical lowercase `agent_id`, and creates that agent's `scratch/` and parent-owned `artifacts/`. Hunters read source and parent-provided context, write only to their unique `scratch/`, and return one structured result through the Task tool. They never write retained artifacts or edit target source, `architecture.md`, `coverage-ledger.json`, `findings.json`, or another agent's files.
 
@@ -29,10 +29,14 @@ A prompt may select several companion blocks when the same path crosses several 
 ```text
 ## Defensive vulnerability-finding method
 
-Your goal is to find source-grounded security invariant failures and the smallest fix,
-not to expand harm beyond the boundary result. Stay within source review and bounded local execution.
-Do not contact deployed endpoints, provider APIs, registries, identity systems,
-message brokers, shared services, or other users. Use local dummy data only.
+Your goal is to find source-grounded security invariant failures and data-integrity
+failures, and the smallest fix, not to expand harm beyond the boundary result. Stay within
+source review and bounded local execution. Do not contact deployed endpoints, provider
+APIs, registries, identity systems, message brokers, plant networks, controllers,
+historians, gateways, shared services, or other users. Use local dummy data and the
+recorded fixtures or simulators the repository ships only. Send no write, command,
+method call, download, mode change, or rebirth request beyond a single dummy message
+that shows the path exists.
 
 READ THE CODE AT DEPTH. Follow each assigned input through parsing, identity,
 authorization, normalization, state, derived copies, and the final sink. Read sibling,
@@ -48,6 +52,16 @@ WORK FROM A CONCRETE INVARIANT:
 5. Stop at the smallest affected dummy record, wrong return value, process-integrity
    effect, or locally observable shared-resource effect.
 6. State a source-level change and regression case that enforce the invariant.
+
+FOR A DATA-INTEGRITY UNIT, the invariant is: the value, timestamp, unit, quality, and
+identity a consumer receives equal what the source produced, or the difference is
+visible to that consumer. Name the source sample or record, each transformation, the
+destination, the consumer, and the decision it informs. Name the ordinary plant
+condition that triggers the difference: fault, restart, reconnect, clock change, late
+or corrected data, rename, unit change, or a concurrent writer. Stop at the smallest
+wrong stored row, rendered field, record entry, or model input. Return `kind:
+"data_integrity"` and the `data_path` fields. A difference the consumer can already
+see, or one no decision depends on, is not a candidate.
 
 DEPTH BOUND: trace only paths that can reach your assigned boundary or whose
 guarantees that boundary relies on. Stop a line of investigation as soon as the
@@ -207,8 +221,8 @@ Return exactly one JSON object, with no surrounding prose:
 
 Each `candidates` entry is schema-shaped except that it uses `proposed_verdict` in place of `verdict`:
 
-- `proposed_verdict: "confirmed"`: include every field required by the `confirmed` branch of `report-schema.json` other than `verdict`: `fingerprint`, title, description, `root_cause`, `intended_behavior`, ordered `trace`, `evidence`, `conditions`, target-neutral `execution`, `remediation`, `severity`, and `confidence`. The execution instructions describe only the bounded local check already performed. `payloads` holds the minimum test input, fixture, or native invocation. `observed_result` records actual local output. Overall severity must not exceed observed impact.
-- `proposed_verdict: "needs_validation"`: include every field required by that schema branch other than `verdict`: `fingerprint`, title, description, `claimed_root_cause`, ordered `trace`, `evidence`, nonempty `blockers`, and `validation_plan` with at least one applicable `local` or `deployment` step. Do not invent an inapplicable context. Do not include severity, execution, remediation, reason, or a confirmed `root_cause`. `deployment` is an owner-observed check, not a request to probe a live target.
+- `proposed_verdict: "confirmed"`: include every field required by the `confirmed` branch of `report-schema.json` other than `verdict`: `kind`, `fingerprint`, title, description, `root_cause`, `intended_behavior`, `data_path` when `kind` is `data_integrity`, ordered `trace`, `evidence`, `conditions`, target-neutral `execution`, `remediation`, `severity`, and `confidence`. The execution instructions describe only the bounded local check already performed. `payloads` holds the minimum test input, fixture, or native invocation. `observed_result` records actual local output. Overall severity must not exceed observed impact.
+- `proposed_verdict: "needs_validation"`: include every field required by that schema branch other than `verdict`: `kind`, `fingerprint`, title, description, `claimed_root_cause`, `data_path` when `kind` is `data_integrity`, ordered `trace`, `evidence`, nonempty `blockers`, and `validation_plan` with at least one applicable `local` or `deployment` step. Do not invent an inapplicable context. Do not include severity, execution, remediation, reason, or a confirmed `root_cause`. `deployment` is an owner-observed check, not a request to probe a live target.
 
 Every assigned coverage ID appears exactly once in `units`. A `covered` unit needs an owner, nonempty `reviewed_paths` and `checks`, no unresolved fact, and no candidate. A `candidate` unit has the same owned evidence and is the only state that carries linked fingerprints. A `blocked` unit is an owned partial review with nonempty paths, checks, and unresolved facts but no fingerprint. All source paths are repository-relative, never absolute or traversal paths. A trace with several entries begins at `entrypoint`, ends at `sink`, and labels intermediate steps `propagation`. Every check has its own canonical lowercase `agent_id` and nonempty `reviewed_paths`; the unit-level list is exactly the union of those owned paths. A `source` check uses `artifact: null`. A `local` check uses one successfully parent-promoted regular file beneath `agents/<check.agent_id>/artifacts/`; this permits a verifier to add independently owned evidence without taking ownership from the hunter. Never link scratch, an output-root file, or another check owner's artifact.
 

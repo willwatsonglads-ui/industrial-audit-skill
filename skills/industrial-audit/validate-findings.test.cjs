@@ -40,6 +40,7 @@ function evidence(file = "src/handler.c", line = 10) {
 function confirmed() {
   return {
     verdict: "confirmed",
+    kind: "security",
     fingerprint: "src-handler-missing-check",
     title: "Missing ownership check",
     description: "An attacker can reach an operation without the intended ownership check.",
@@ -67,6 +68,7 @@ function confirmed() {
 function needsValidation() {
   return {
     verdict: "needs_validation",
+    kind: "security",
     fingerprint: "src-parser-size-hypothesis",
     title: "Unchecked parsed size",
     description: "A parsed size may reach an allocation without a limit.",
@@ -84,6 +86,7 @@ function needsValidation() {
 function rejected() {
   return {
     verdict: "rejected",
+    kind: "security",
     fingerprint: "src-router-auth-bypass",
     title: "Authorization bypass in router",
     description: "The candidate claimed a route bypassed authorization.",
@@ -569,6 +572,88 @@ test("caps amplified in-limit findings output under a constrained Node heap", { 
   assert.match(output, /output capped at 100/);
   assert(output.length < 20000, `unexpected output length ${output.length}`);
   assert.doesNotMatch(output, /heap out of memory|allocation failed|RangeError|Maximum call stack/i);
+});
+
+function dataPath() {
+  return {
+    source: "Recorded device sample with an uncertain quality code.",
+    transformations: ["The ingest step stores the value and drops the quality code."],
+    destination: "The operating trend's current-value field.",
+    consumer: "The shift operator.",
+    decision_affected: "Whether to adjust the unit's feed rate.",
+  };
+}
+
+function confirmedDataIntegrity() {
+  const finding = confirmed();
+  finding.kind = "data_integrity";
+  finding.fingerprint = "src-ingest-quality-dropped";
+  finding.data_path = dataPath();
+  finding.conditions = [{ kind: "process_state", description: "The device reports uncertain quality during a communication fault." }];
+  finding.execution.attacker_perspective = "No attacker: a device communication fault the plant sees routinely.";
+  finding.references = [{ framework: "OPC-UA", id: "Part 4 StatusCode" }];
+  return finding;
+}
+
+function needsValidationDataIntegrity() {
+  const finding = needsValidation();
+  finding.kind = "data_integrity";
+  finding.fingerprint = "src-history-dst-repeat";
+  finding.data_path = dataPath();
+  finding.validation_plan.runtime = {
+    family: "fault_injection",
+    description: "Replay the recorded fall-back hour through the ingest path and compare stored instants with the source.",
+  };
+  return finding;
+}
+
+test("accepts data_integrity findings, industrial conditions, references, and runtime hand-offs", () => {
+  assert.deepEqual(errorsFor([needsValidationDataIntegrity(), confirmedDataIntegrity()]), []);
+  for (const kind of ["process_state", "network_zone", "physical_access", "engineering_mode", "time_source"]) {
+    const finding = confirmed();
+    finding.conditions = [{ kind, description: "The plant condition that the result depends on." }];
+    assert.deepEqual(errorsFor([finding]), [], kind);
+  }
+  const referenced = confirmed();
+  referenced.references = [{ framework: "IEC-62443-3-3", id: "SR 2.1" }, { framework: "MITRE-ATTACK-ICS", id: "T0836" }];
+  assert.deepEqual(errorsFor([referenced]), []);
+  const rejectedDataIntegrity = rejected();
+  rejectedDataIntegrity.kind = "data_integrity";
+  assert.deepEqual(errorsFor([rejectedDataIntegrity]), []);
+});
+
+test("binds data_path to the finding kind", () => {
+  const withoutPath = confirmedDataIntegrity();
+  delete withoutPath.data_path;
+  assert.match(errorsFor([withoutPath]).join("\n"), /data_integrity finding requires "data_path"/);
+  const blockedWithoutPath = needsValidationDataIntegrity();
+  delete blockedWithoutPath.data_path;
+  assert.match(errorsFor([blockedWithoutPath]).join("\n"), /data_integrity finding requires "data_path"/);
+  const securityWithPath = confirmed();
+  securityWithPath.data_path = dataPath();
+  assert.match(errorsFor([securityWithPath]).join("\n"), /security finding must not contain "data_path"/);
+});
+
+test("rejects malformed kinds, data paths, references, and runtime hand-offs", () => {
+  const cases = [
+    [confirmed, (finding) => { delete finding.kind; }],
+    [needsValidation, (finding) => { delete finding.kind; }],
+    [rejected, (finding) => { delete finding.kind; }],
+    [confirmed, (finding) => { finding.kind = "safety"; }],
+    [rejected, (finding) => { finding.data_path = dataPath(); }],
+    [confirmedDataIntegrity, (finding) => { finding.data_path.consumer = " "; }],
+    [confirmedDataIntegrity, (finding) => { delete finding.data_path.decision_affected; }],
+    [confirmedDataIntegrity, (finding) => { finding.data_path.extra = "x"; }],
+    [confirmed, (finding) => { finding.references = [{ framework: "ISO-9999", id: "1" }]; }],
+    [confirmed, (finding) => { finding.references = [{ framework: "ISA-18.2", id: "" }]; }],
+    [confirmed, (finding) => { finding.references = [{ framework: "ISA-101", id: "5" }, { framework: "ISA-101", id: "5" }]; }],
+    [rejected, (finding) => { finding.references = [{ framework: "ISA-101", id: "5" }]; }],
+    [needsValidationDataIntegrity, (finding) => { finding.validation_plan.runtime.family = "live_plant_probe"; }],
+    [needsValidationDataIntegrity, (finding) => { finding.validation_plan.runtime.description = ""; }],
+    [needsValidationDataIntegrity, (finding) => { finding.validation_plan = { runtime: finding.validation_plan.runtime }; }],
+    [confirmed, (finding) => { finding.conditions = [{ kind: "weather", description: "Rain." }]; }],
+  ];
+  for (const [factory, mutate] of cases) rejectMutation(factory, mutate);
 });
 
 test("keeps shared helpers aligned with the coverage-ledger validator", () => {

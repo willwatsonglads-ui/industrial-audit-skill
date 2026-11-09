@@ -38,6 +38,14 @@ unavailable or fails, do not use that file as evidence.
    missing fact remains decisive, keep needs_validation and make the local and
    owner-observed plans exact and non-destructive.
 6. Preserve the fingerprint for the same source-derived root cause across every state.
+7. For a data_integrity candidate, verify every data_path element against source and
+   reproduce the wrong received value, time, unit, quality, identity, or record state on
+   a repository fixture or a minimal harness. Check whether any downstream code or
+   display makes the difference visible to the named consumer; if it does, reject the
+   candidate or lower it to what remains wrong. If the result depends on a device,
+   gateway, historian, or site setting that source cannot show, keep needs_validation
+   and name that setting exactly. Never confirm one from a simulator's behavior alone
+   when the claim is about a real device.
 
 Return exactly one JSON object and no surrounding prose:
 {"decision": "confirmed|needs_validation|rejected", "record": { ... }}
@@ -102,6 +110,7 @@ The parent writes all independently decided records to `<output-dir>/findings.js
 
 Read `report-schema.json` immediately before writing. It uses `additionalProperties: false`; do not carry hunter wrapper fields into a record. Keep these verdict contracts distinct:
 
+- Every record has `kind`: `security` or `data_integrity`. A `data_integrity` `confirmed` or `needs_validation` record also carries `data_path` (`source`, `transformations`, `destination`, `consumer`, `decision_affected`); a `security` record must not. Use `execution.attacker_perspective` for the plant condition that triggers a data-integrity result when no attacker is involved. Add `references` only with identifiers listed in [STANDARDS.md](STANDARDS.md). A `needs_validation` record whose decisive check needs a running system adds `validation_plan.runtime` with its `family`.
 - A `confirmed` record uses `root_cause`, `intended_behavior`, `conditions`, `execution`, `remediation`, `severity`, and `confidence`. It must not use `claimed_root_cause`, `blockers`, `validation_plan`, or `reason`. `execution` is target-neutral and uses the target's native interface: API/HTTP input, CLI call, library call, message, file fixture, browser action, rendered policy, or local harness as applicable. `observed_result` is nonempty and factual.
 - A `needs_validation` record uses `claimed_root_cause`, `trace`, `evidence`, `blockers`, and at least one nonempty `validation_plan.local` or `validation_plan.deployment` field. Include both only when both contexts can resolve distinct facts. It must not use severity, execution, remediation, reason, or confirmed root cause.
 - A `rejected` record uses `claimed_root_cause`, `trace`, `evidence`, and `reason`. It must not use severity, execution, remediation, blockers, validation plan, or confirmed root cause.
@@ -157,10 +166,10 @@ Only after Phase 5 passes for every record retained in `findings.json`, derive p
 Write:
 
 1. Run profile, scope, budget (if set) with agents spent versus planned, source ref, sandboxed source-and-local-only execution statement, prior-run use, and explicit deferred and out-of-scope coverage. Name carried same-source confirmations and changed-source revalidations. A `quick`, scoped, budget-limited, or incomplete run states plainly that it is a partial pass. If candidate validation exhausted a strict budget, state that the run is incomplete and list every unvalidated fingerprint and linked unit; do not describe those candidates as findings. If the budget prevented a mandatory critic, state which critic did not run and make no clean-coverage claim.
-2. One short security posture summary.
-3. A confirmed-findings table: severity, title, affected boundary, and one-line observed result.
-4. Each confirmed finding: repository source location, lower-trust principal, target-native bounded reproduction, conditions, actual result, impact, priority rationale, and smallest source fix.
-5. A separate `NEEDS VALIDATION` table. Give each lead's title, repository trace, exact blocker, bounded local next step, and safe owner-observed deployment check. Do not assign severity or call it a confirmed vulnerability.
+2. One short security posture summary and one short data-integrity summary.
+3. Two confirmed-findings tables, security first and then data integrity: severity, title, affected boundary or data path, one-line observed result, and the standards identifiers from `references`, if any.
+4. Each confirmed finding: repository source location, lower-trust principal or triggering plant condition, data path for data-integrity records, target-native bounded reproduction, conditions, actual result, impact, priority rationale, and smallest source fix.
+5. A separate `NEEDS VALIDATION` table. Give each lead's kind, title, repository trace, exact blocker, bounded local next step, safe owner-observed deployment check, and runtime-check family when present. Do not assign severity or call it a confirmed vulnerability.
 6. Separate hardening notes and positive source patterns.
 7. Coverage summary from the ledger: covered, candidate, blocked, and deferred counts, plus important exclusions and the final critic result.
 
@@ -173,7 +182,8 @@ For each confirmed `medium`, `high`, or `critical` record, copy the complete sou
 - ordered repository-relative trace and evidence;
 - dummy attacker/principal and affected dummy resource;
 - native input, invocation, or fixture and exact bounded instructions;
-- observed output and the security invariant it proves;
+- observed output and the security or data-integrity invariant it proves;
+- for a data-integrity record, the full data path and the decision it reaches;
 - conditions and containment;
 - source-level remediation and regression case.
 
@@ -182,5 +192,7 @@ For each confirmed `medium`, `high`, or `critical` record, copy the complete sou
 For every unresolved record, copy the source trace, verified evidence, exact blocker, affected boundary, and each applicable bounded local or owner-observed resolution plan. Keep these as prioritized leads without severity. Do not turn them into live test guidance or assume the missing deployment fact.
 
 HTTP is one possible native interface, not the default. A library finding may use a function call, a parser a fixture, a CLI a command, a desktop app an IPC or file action, and infrastructure a locally rendered policy. Do not require an endpoint, external account, or live environment that the target does not have.
+
+Never state or imply that the target is compliant with, certified to, or validated against any standard or regulation. Standards identifiers point readers to related requirements; they are not a conformance claim.
 
 Keep the report proportional to the evidence. A clean run may have zero confirmed records. State that result and the remaining coverage/validation limits without inventing LOW findings.
