@@ -31,6 +31,7 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - OT additions to the security severity anchors;
   - separate severity anchors for data-integrity records, with audit-trail defects rated high for a record the software claims to audit, medium under an uncommon condition, and never above deliberate tampering, which stays a `security` record;
   - three new anti-patterns;
+  - the `quick` profile seeds one ledger unit per companion class group instead of one per class (defined in `RECONNAISSANCE.md`); `standard` and `deep` are unchanged;
   - anti-pattern 5 now treats a separation of requester and approver that the software states as the boundary, so self-approval that defeats it is not dismissed as same-principal authority.
 - `RECONNAISSANCE.md`:
   - plant systems added to the no-contact list;
@@ -40,11 +41,13 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - Agent 1d item 8, the listeners and network defaults that shipped installers and configurations open;
   - architecture item 1 gains an authority map;
   - architecture item 9, plant placement, with egress claims, listeners, outbound destinations, caller-chosen targets and record writers, and a word cap of about 1,400 when it applies;
-  - each record writer and copy path becomes a ledger surface, so jobs and migrations get coverage units.
+  - each record writer and copy path becomes a ledger surface, so jobs and migrations get coverage units;
+  - in `quick`, a companion unit's attack-class reference is the group heading, with each applicable class of the group in `selected_companion_blocks`, each inapplicable one in `excluded_blocks`, and a check per selected class before the unit closes. The ledger validator is unchanged; it already accepts heading references.
 - `ATTACK-CLASSES.md`:
-  - seven industrial target entries in the companion-selection list, with the OT-boundary entry also selected by listeners, plant-host connections and placement or egress claims, and governance also selected for role administration and for agents and automations acting under a stored or forwarded identity;
-  - three plant items under Obvious things, the third for connection strings shown below administrator and for debug or host-network ports in shipped files;
-  - an Access control question on revocation reaching sessions, tokens, jobs and agent runs, and plant hosts named in the SSRF item;
+  - seven industrial target entries in the companion-selection list, with the OT-boundary entry also selected by listeners, plant-host connections, placement or egress claims and server-side script engines, governance also selected for role administration, permission resolution, stored connection credentials and agents and automations acting under a stored or forwarded identity, and the AI entry also selecting the caller-chosen-target class when an agent tool can open a connection;
+  - a rule to select only the class groups of a companion whose boundary reconnaissance found, and to record the rest in `excluded_blocks`;
+  - three plant items under Obvious things, the first also asking whether authentication is off until enabled or requests are answered before first-run setup, the third for connection strings shown below administrator and for debug or host-network ports in shipped files;
+  - three Access control questions: revocation reaching sessions, tokens, jobs and agent runs; every route, socket event and scheduler entry enforcing the software's own role matrix, with exemption lists and guest or malformed tokens; and read-only roles triggering outbound side effects. Plant hosts are named in the SSRF item;
   - the `confirmed` rule extended to data-integrity records.
 - `HUNTING.md`:
   - the hunter method extended to data-integrity units, with record state and the audit trail in the invariant and imports, jobs, migrations and restores among the triggers;
@@ -73,8 +76,10 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - `AI-IN-PLANT-OPERATIONS.md`
   - `GOVERNANCE-CONFIGURATION-AND-CHANGE.md`
 
-  Among their classes are agent and automation authority (grant ceilings, stored runs after the owner loses access, agent approval of its own proposals, agent reach into permission settings), audit-trail review and refused or partial actions, calculated-value versioning, shipped listeners, undeclared egress and proxy routing, and caller-chosen plant connection targets. Every class is bounded to what the target software itself claims.
+  They hold 128 classes: 18 for the OT boundary, 17 for protocols, 18 for process data, 18 for records, 16 for alarms and displays, 21 for AI in plant operations and 20 for governance. Among them are agent and automation authority (grant ceilings, stored runs after the owner loses access, agent approval of its own proposals, agent reach into permission settings, AI disable switches and autonomy levels), permission resolution that fails open, audit-trail review and refused or partial actions, calculated-value and contract versioning, ingest checkpoints and store-and-forward spools, shipped listeners, undeclared egress and proxy routing, caller-chosen plant connection targets, connection secret readback and credential forwarding, model provider routing and residency, retention of prompts and derived stores, and in-product script and test-run engines. Every class is bounded to what the target software itself claims or to a demonstrated wrong result.
+
+  Besides the sources listed in `STANDARDS.md`, the classes were also informed by the public documentation of industrial data and AI platforms and by published advisories in open-source industrial software. No vendor, product or advisory is named in the skill, and no vendor wording is reproduced.
 - `STANDARDS.md`: a crosswalk from the industrial classes to standards identifiers, each checked against a public source. Paywalled standards are cited by identifier only.
-- `scripts/check-skill.cjs`: structural checks for companion headings, selection-list links, the README file table, and unique class names.
+- `scripts/check-skill.cjs`: structural checks for companion headings, selection-list links, the README file table, unique class names, and `FILE.md#Class` cross-references that must resolve to a class or heading.
 - `.github/workflows/test.yml`: runs the validator tests and the structure check on Linux, Windows, and macOS.
 - This file.

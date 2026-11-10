@@ -58,6 +58,7 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Undeclared egress and proxy routing | `IEC-62443-3-3 SR 5.2`, `IEC-62443-3-3 SR 4.1`, `MITRE-ATTACK-ICS T0882` |
 | Remote-access reach beyond the named control-zone asset | `IEC-62443-3-3 SR 1.13`, `IEC-62443-3-3 SR 2.1`, `NIST-SP-800-82r3 6.2.10`, `NIST-SP-800-82r3 E.3.6`, `MITRE-ATTACK-ICS T0822`, `MITRE-ATTACK-ICS T0886` |
 | Engineering project and controller-artifact trust | `IEC-62443-3-3 SR 3.4`, `IEC-62443-3-3 SR 4.1`, `MITRE-ATTACK-ICS T0889`, `MITRE-ATTACK-ICS T0882` |
+| Script, expression, and test-run execution reach | `IEC-62443-3-3 SR 2.1`, `IEC-62443-3-3 SR 7.7` |
 | Bypass, maintenance, and simulation mode leakage | `IEC-62443-3-3 SR 2.1`, `IEC-62443-3-3 SR 7.6` |
 | Safety instrumented system adjacency | — |
 
@@ -101,6 +102,7 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Calculated value formula and input-version drift | `21-CFR-11 11.10(a)`, `ALCOA+ Original`, `ALCOA+ Consistent` |
 | Late and corrected sample write-rule conflicts | `ALCOA+ Original`, `ALCOA+ Consistent` |
 | Reconnect, replay, and history-into-live duplication | `MQTT-5 Table 3-2`, `MQTT-5 3.3.1.1`, `Sparkplug-B tck-id-operational-behavior-data-publish-nbirth-order` |
+| Ingest checkpoint and store-and-forward spool loss | `ALCOA+ Complete` |
 | Tag identity drift and name reuse | — |
 | Lab sample, result, and entry time confusion | `ALCOA+ Contemporaneous`, `ALCOA+ Accurate` |
 | Censored, text, and specification-limit coercion | `EU-GMP-Annex-11 5`, `ALCOA+ Accurate`, `ALCOA+ Original` |
@@ -147,15 +149,16 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Self-silencing monitoring and health indicators | `IEC-62443-3-3 SR 6.2` |
 | Silent notification delivery failure | — |
 | Notification and lock-screen content disclosure | `IEC-62443-3-3 SR 4.1` |
-| Dashboard and report cache age concealment | `OPC-UA Part 4 5.11.2`, `OPC-UA Part 4 7.11.4` |
+| Dashboard and report cache age concealment | — |
 
 ### AI-IN-PLANT-OPERATIONS.md
 
 | Class | Identifiers |
 |---|---|
-| AI recommendation-to-action bypass | `CISA-AI-OT 2.4`, `CISA-AI-OT 4.1`, `OWASP-LLM LLM06:2025`, `OWASP-Agentic ASI02`, `NIST-AI-RMF MAP 3.5`, `EU-AI-Act Art. 14` |
 | Agent approval, signature, and release reach | `CISA-AI-OT 4.1`, `OWASP-Agentic ASI03`, `21-CFR-11 11.10(g)`, `EU-AI-Act Art. 14` |
 | Agent reach into authority and permission settings | `IEC-62443-3-3 SR 1.3`, `IEC-62443-3-3 SR 2.1`, `OWASP-LLM LLM06:2025`, `OWASP-Agentic ASI03` |
+| AI disable switch and autonomy-mode enforcement gaps | `CISA-AI-OT 3.1`, `CISA-AI-OT 4.1`, `OWASP-LLM LLM06:2025`, `NIST-AI-RMF MAP 3.5`, `EU-AI-Act Art. 14` |
+| AI recommendation-to-action bypass | `CISA-AI-OT 2.4`, `CISA-AI-OT 4.1`, `OWASP-LLM LLM06:2025`, `OWASP-Agentic ASI02`, `NIST-AI-RMF MAP 3.5`, `EU-AI-Act Art. 14` |
 | Approval not re-checked against current process state | `CISA-AI-OT 4.1`, `NIST-AI-RMF MAP 3.5` |
 | Approval card built from model narrative | `OWASP-Agentic ASI09`, `EU-AI-Act Art. 14(4)(c)` |
 | Indirect plant write reach through connected systems | `CISA-AI-OT 2.4`, `OWASP-LLM LLM06:2025`, `OWASP-Agentic ASI02` |
@@ -170,6 +173,8 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Silent fallback when the model is unavailable | `CISA-AI-OT 2.4`, `CISA-AI-OT 4.2`, `NIST-AI-RMF MEASURE 2.6`, `EU-AI-Act Art. 15(4)` |
 | OT data pull and egress beyond the stated boundary | `CISA-AI-OT 2.2`, `CISA-AI-OT 2.4`, `CISA-AI-OT 4.1`, `OWASP-LLM LLM02:2025`, `IEC-62443-3-3 SR 5.2` |
 | Cross-site learning-set and embedding leakage | `CISA-AI-OT 2.3`, `OWASP-LLM LLM02:2025`, `OWASP-LLM LLM08:2025` |
+| Model provider routing, residency, and fallback drift | `CISA-AI-OT 2.2`, `OWASP-LLM LLM02:2025`, `IEC-62443-3-3 SR 5.2` |
+| Prompt, trace, and derived-store retention overrun | `CISA-AI-OT 2.2`, `OWASP-LLM LLM02:2025` |
 | Model output in safety-function paths | `CISA-AI-OT 1.1`, `CISA-AI-OT 4.2`, `EU-AI-Act Art. 6(1)` |
 
 ### GOVERNANCE-CONFIGURATION-AND-CHANGE.md
@@ -184,6 +189,7 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Role-administration grant ceiling gaps | `IEC-62443-3-3 SR 1.3`, `IEC-62443-3-3 SR 2.1` |
 | Delegated and impersonated authority carryover | `IEC-62443-3-3 SR 2.1`, `IEC-62443-3-3 SR 2.12`, `21-CFR-11 11.100` |
 | Stored-run authority after owner or grant change | `IEC-62443-3-3 SR 2.1`, `21-CFR-11 11.10(g)` |
+| Permission resolution fail-open and scope widening | `IEC-62443-3-3 SR 2.1` |
 | Shared, service, and break-glass account lifecycle gaps | `IEC-62443-3-3 SR 1.3`, `IEC-62443-3-3 SR 1.5`, `MITRE-ATTACK-ICS T0859` |
 | Remote-support and vendor access lifecycle gaps | `IEC-62443-3-3 SR 1.13`, `IEC-62443-3-3 SR 2.6`, `NIST-SP-800-82r3 6.2.10`, `MITRE-ATTACK-ICS T0822`, `MITRE-ATTACK-ICS T0886` |
 | Site identifier trust in multi-site deployments | `IEC-62443-3-3 SR 1.2`, `IEC-62443-3-3 SR 2.1` |
@@ -193,6 +199,7 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | License, certificate, and subscription expiry that stops data silently | — |
 | Default and fleet-shared credentials | `MITRE-ATTACK-ICS T1694.001`, `MITRE-ATTACK-ICS T1694.002`, `IEC-62443-3-3 SR 1.5` |
 | Plain-text secrets on shared plant workstations | `IEC-62443-3-3 SR 1.5`, `IEC-62443-3-3 SR 4.1` |
+| Connection secret readback and credential forwarding | `IEC-62443-3-3 SR 1.5`, `IEC-62443-3-3 SR 4.1` |
 | Security-event emission and forwarding loss | `IEC-62443-3-3 SR 2.8`, `IEC-62443-3-3 SR 2.10`, `IEC-62443-3-3 SR 6.2`, `NIST-SP-800-82r3 6.2.6.1`, `NIST-SP-800-82r3 5.2.3.2` |
 
 ## Identifier notes
