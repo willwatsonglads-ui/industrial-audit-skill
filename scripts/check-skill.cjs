@@ -35,7 +35,7 @@ const TEMPLATE = [
 ];
 
 function readLines(file) {
-  return fs.readFileSync(file, "utf8").split("\n");
+  return fs.readFileSync(file, "utf8").split(/\r?\n/);
 }
 
 function companionErrors(file, lines) {
