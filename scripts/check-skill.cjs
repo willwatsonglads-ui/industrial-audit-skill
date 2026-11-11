@@ -23,6 +23,7 @@ const NON_COMPANION = new Set([
   "ATTACK-CLASSES.md",
   "VALIDATION-AND-REPORTING.md",
   "STANDARDS.md",
+  "BUILD-GUIDE.md",
 ]);
 const TEMPLATE = [
   { label: "# <title> Hunting", test: (line) => /^# .+ Hunting$/.test(line) },

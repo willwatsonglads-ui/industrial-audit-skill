@@ -1,6 +1,6 @@
 # Standards crosswalk
 
-This file maps the classes in the seven industrial companion files to standards identifiers that a reader can look up. A finding may cite them in its optional `references` list, each entry made of a `framework` key from `report-schema.json` and an `id` written exactly as it appears here, for example `{"framework": "IEC-62443-3-3", "id": "SR 2.1"}` or `{"framework": "21-CFR-11", "id": "11.10(e)"}`. This list is the allowed set: cite nothing that is not listed here, and add an identifier only after checking it against the public source named under Sources. The identifiers point readers to related requirements. A finding that cites one is not a conformance assessment, and the audit never claims that a system complies with any standard or regulation.
+This file maps the classes in the nine industrial companion files to standards identifiers that a reader can look up. A finding may cite them in its optional `references` list, each entry made of a `framework` key from `report-schema.json` and an `id` written exactly as it appears here, for example `{"framework": "IEC-62443-3-3", "id": "SR 2.1"}` or `{"framework": "21-CFR-11", "id": "11.10(e)"}`. This list is the allowed set: cite nothing that is not listed here, and add an identifier only after checking it against the public source named under Sources. The identifiers point readers to related requirements. A finding that cites one is not a conformance assessment, and the audit never claims that a system complies with any standard or regulation.
 
 ## Sources
 
@@ -88,6 +88,12 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 
 | Class | Identifiers |
 |---|---|
+| Subscription parameters and item results never read back | `OPC-UA Part 4 5.13.2`, `OPC-UA Part 4 5.13.1` |
+| Sample loss and source freeze inside a live session | `OPC-UA Part 4 5.13.1`, `OPC-UA Part 4 5.14.1` |
+| Reconnect without gap recovery | `OPC-UA Part 4 6.7`, `ALCOA+ Complete` |
+| Register decoding and device error responses read as values | `ALCOA+ Accurate` |
+| Non-simultaneous reads stamped as one instant | — |
+| Metric metadata, datatype, and encoding drift | — |
 | Quality-code loss and misclassification | `OPC-UA Part 4 7.38.1`, `OPC-UA Part 4 7.11.1`, `OPC-UA Part 4 7.11.5`, `OPC-UA Part 8 7.3.2` |
 | Stale value and liveness misrepresentation | `OPC-UA Part 4 7.38.2`, `OPC-UA Part 8 7.3.2`, `OPC-UA Part 4 5.11.2`, `Sparkplug-B tck-id-operational-behavior-edge-node-termination-host-action-ndeath-node-tags-stale`, `MQTT-5 3.8.3.1` |
 | Timestamp source and clock-skew confusion | `OPC-UA Part 4 7.11.3`, `OPC-UA Part 4 7.11.4`, `OPC-UA Part 4 7.39`, `NIST-SP-800-82r3 6.2.12` |
@@ -95,8 +101,11 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Engineering-unit loss and double conversion | `OPC-UA Part 8 5.6.4`, `ALCOA+ Accurate` |
 | Raw-count scaling, range clamping, and storage precision loss | `OPC-UA Part 8 7.3.2`, `ALCOA+ Accurate` |
 | Counter and totalizer reset and rollover errors | — |
+| Unit symbol, quantity-kind, and offset conversion errors | `ALCOA+ Accurate` |
+| Non-finite and sentinel value handling | `ALCOA+ Accurate` |
 | Interpolation across gaps and stepped signals | `OPC-UA Part 13 5.4.3`, `OPC-UA Part 11 6.5.3` |
 | Aggregate quality and weighting contamination | `OPC-UA Part 13 5.4.3` |
+| Window boundary, bucket origin, and label errors | `ALCOA+ Accurate`, `ALCOA+ Consistent` |
 | Compression and deadband misreading | — |
 | Gap filling, zero substitution, and silent row loss | `OPC-UA Part 4 7.38.1`, `OPC-UA Part 4 7.11.5`, `ALCOA+ Complete` |
 | Calculated value formula and input-version drift | `21-CFR-11 11.10(a)`, `ALCOA+ Original`, `ALCOA+ Consistent` |
@@ -106,6 +115,8 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Tag identity drift and name reuse | — |
 | Lab sample, result, and entry time confusion | `ALCOA+ Contemporaneous`, `ALCOA+ Accurate` |
 | Censored, text, and specification-limit coercion | `EU-GMP-Annex-11 5`, `ALCOA+ Accurate`, `ALCOA+ Original` |
+| Result-to-limit comparison and rounding errors | `ALCOA+ Accurate`, `ALCOA+ Consistent` |
+| Unverified, retracted, and replicate result use | `ALCOA+ Original`, `ALCOA+ Complete` |
 
 ### RECORDS-AUDIT-AND-SIGNATURES.md
 
@@ -202,6 +213,52 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 | Connection secret readback and credential forwarding | `IEC-62443-3-3 SR 1.5`, `IEC-62443-3-3 SR 4.1` |
 | Security-event emission and forwarding loss | `IEC-62443-3-3 SR 2.8`, `IEC-62443-3-3 SR 2.10`, `IEC-62443-3-3 SR 6.2`, `NIST-SP-800-82r3 6.2.6.1`, `NIST-SP-800-82r3 5.2.3.2` |
 
+### MODELS-BATCH-AND-SIMULATION.md
+
+No standard in the verified list addresses these classes directly. The ALCOA+ attributes are cited only where a class concerns the accuracy, completeness, or consistency of a stored result; the other rows are empty.
+
+| Class | Identifiers |
+|---|---|
+| Estimate quality not derived from input state | `ALCOA+ Accurate` |
+| Extrapolation beyond the fitted range | — |
+| Clamped, held, and defaulted results | `ALCOA+ Accurate` |
+| Online correction from unvetted results | — |
+| Feature and target time misalignment | — |
+| Training-set selection bias | `ALCOA+ Complete` |
+| Accuracy figures from leaky evaluation | — |
+| Batch boundary and identity errors | `ALCOA+ Accurate` |
+| Profile alignment across unequal batches | — |
+| Verdict without sufficient data | `ALCOA+ Complete` |
+| Reference set and envelope construction errors | — |
+| Production-day and shift boundary errors | `ALCOA+ Accurate` |
+| Ratio, rate, and rollup arithmetic errors | `ALCOA+ Accurate` |
+| Balance closure by assignment | `ALCOA+ Original` |
+| Solver status ignored and failed-solve reuse | `ALCOA+ Accurate` |
+| Measurement-to-model basis mismatch | `ALCOA+ Accurate` |
+| Unsteady and non-simultaneous inputs to a steady-state model | — |
+| Property and correlation validity range overrun | — |
+| Parameter fitting that absorbs bad data | — |
+| Optimization result outside the validated envelope | — |
+
+### PIPELINES-JOBS-AND-RELIABILITY.md
+
+| Class | Identifiers |
+|---|---|
+| Consumed-before-committed source acknowledgement | `ALCOA+ Complete` |
+| Rerun, retry, and backfill duplication | `ALCOA+ Consistent` |
+| Rejected and partially written record accounting | `ALCOA+ Complete` |
+| Partial file and local database durability gaps | `ALCOA+ Enduring` |
+| Truncated and failed reads treated as complete | `ALCOA+ Complete` |
+| Run window taken from the wall clock | `ALCOA+ Accurate` |
+| Missed, doubled, and overlapping scheduled runs | `ALCOA+ Complete` |
+| Period closed before its data is complete | `ALCOA+ Complete`, `ALCOA+ Consistent` |
+| Duplicate active writers after restart or failover | `ALCOA+ Consistent` |
+| Lost update on concurrent edit | `ALCOA+ Original` |
+| Failure converted to a default value | `ALCOA+ Accurate` |
+| Schema and configuration drift read through defaults | `ALCOA+ Accurate` |
+| Data lag and absence hidden by process health | — |
+| Wall-clock durations and unsynchronized start-up time | `NIST-SP-800-82r3 6.2.12` |
+
 ## Identifier notes
 
 **ISA/IEC 62443.** The framework keys name parts of the ISA/IEC 62443 series; the editions checked are the ISA ones in Sources. SR numbers and titles for 62443-3-3 were confirmed only through secondary sources that agree with each other, and the capitalization of the FR3 to FR7 titles is editorial. Check them against the standard before relying on them. Short titles of the SRs cited: SR 1.1 human user identification and authentication; SR 1.2 software process and device identification and authentication; SR 1.3 account management; SR 1.5 authenticator management; SR 1.13 access via untrusted networks; SR 2.1 authorization enforcement; SR 2.6 remote session termination; SR 2.8 auditable events; SR 2.10 response to audit processing failures; SR 2.11 timestamps; SR 2.12 non-repudiation; SR 3.1 communication integrity; SR 3.4 software and information integrity; SR 3.5 input validation; SR 3.7 error handling; SR 3.9 protection of audit information; SR 4.1 information confidentiality; SR 5.1 network segmentation; SR 5.2 zone boundary protection; SR 6.2 continuous monitoring; SR 7.3 control system backup; SR 7.4 control system recovery and reconstitution; SR 7.6 network and security configuration settings; SR 7.7 least functionality; SR 7.8 control system component inventory. For 62443-4-1, cite only the practice prefix; `SUM` is security update management. For 62443-4-2, only `CR 1.1` (human user identification and authentication) has a confirmed title. 62443-3-2 is cited by document identifier only.
@@ -220,7 +277,7 @@ Each cell lists `FRAMEWORK id` pairs. "—" means no verified identifier maps so
 
 **ISA-101.** Only the document identifier is confirmed. Display hierarchy levels, colour used only for abnormal states and data-quality display conventions are often attributed to it, but were not confirmed against the standard and are not cited. A citation of ANSI/ISA-101.01-2015 points to HMI design requirements in general. It does not confirm that the standard addresses the specific defect.
 
-**OPC UA.** Section numbers follow version 1.05 of the online reference. Part 2 sections 4.10 (Application Authentication) and 4.11 (User Authorization) were confirmed from the Part 2 contents list only. The Part 11 section 6.5.3 (ReadRawModifiedDetails) content was served at a URL ending `6.4.3`. Security policies deprecated in Part 7 and the Part 12 trust-list rules were not confirmed on the primary pages and are not cited.
+**OPC UA.** Section numbers follow version 1.05 of the online reference. Part 4 sections 5.13.1 (MonitoredItem model), 5.13.2 (CreateMonitoredItems), 5.14.1 (Subscription model) and 6.7 (Re-establishing connections) were read on 2026-11-11. Part 2 sections 4.10 (Application Authentication) and 4.11 (User Authorization) were confirmed from the Part 2 contents list only. The Part 11 section 6.5.3 (ReadRawModifiedDetails) content was served at a URL ending `6.4.3`. Security policies deprecated in Part 7 and the Part 12 trust-list rules were not confirmed on the primary pages and are not cited.
 
 **Sparkplug B.** IDs are the specification's TCK requirement IDs, cited in full and rechecked against the chapter 5 source on 2026-11-09. The host application's retained Death flag is `tck-id-operational-behavior-host-application-death-retained`, not a `connect-` ID. Payload-chapter rules (per-metric timestamps, `is_historical`, alias definitions) were not read and are not cited.
 

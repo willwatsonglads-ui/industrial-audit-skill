@@ -5,7 +5,9 @@ A coding-agent skill that audits software deployed in manufacturing and process 
 - **Security**: a vulnerability that crosses a real trust boundary, such as a write that reaches a controller without the intended approval.
 - **Data integrity**: a value, timestamp, unit, quality code, tag identity or record that reaches an operator, a record or an automated action differently from what the source produced, with no visible sign. Examples are a bad-quality sample stored as good, a stale value shown as live, or an audit entry that a restore drops.
 
-It covers historians, SCADA and HMI software, MES, LIMS, batch and quality records, OPC UA and MQTT/Sparkplug integrations, fieldbus gateways, edge devices, operator displays and alarms, and AI models or agents that read plant data or act on it. Ordinary web, cloud, native and supply-chain code is covered too.
+It covers historians, SCADA and HMI software, MES, LIMS, batch and quality records, OPC UA and MQTT/Sparkplug integrations, fieldbus gateways, edge devices, data pipelines and scheduled jobs, soft sensors, batch analytics, KPIs, process simulations and digital twins, operator displays and alarms, and AI models or agents that read plant data or act on it. Ordinary web, cloud, native and supply-chain code is covered too.
+
+It also works before the audit. A build guide gives a coding agent the rules and code patterns to apply while it writes or fixes plant software, so that a bad input, a gap or a failed calculation does not come out as a normal-looking number in the first place.
 
 ## Built on Cloudflare's security-audit skill
 
@@ -14,7 +16,8 @@ This is a fork of Cloudflare's [security-audit-skill](https://github.com/cloudfl
 The fork adds plant knowledge and keeps the bar. [CHANGES-FROM-UPSTREAM.md](CHANGES-FROM-UPSTREAM.md) lists every change. In short:
 
 - **A second finding kind.** `data_integrity` records carry a `data_path` (source, transformations, destination, consumer, and the decision it informs) and use their own severity anchors, rated by the decision the wrong result reaches.
-- **Seven industrial companion files**, covering OT boundaries and control writes; industrial protocols and devices; process-data integrity; records, audit trails and signatures; alarms, HMI and displays; AI in plant operations; and governance, configuration and change.
+- **Nine industrial companion files**, covering OT boundaries and control writes; industrial protocols and devices; process-data integrity; models, batch analytics and simulation; pipelines, scheduled jobs and runtime reliability; records, audit trails and signatures; alarms, HMI and displays; AI in plant operations; and governance, configuration and change.
+- **A build guide.** [BUILD-GUIDE.md](skills/industrial-audit/BUILD-GUIDE.md) is read in build mode, when the task is to write or fix plant software. It holds seven rules, the plant facts to settle before writing, code patterns for the library defaults that silently produce wrong plant numbers, a closing condition table, and a procedure for fixing a finding so that the consumer's result changes on every path.
 - **Plant safety rules.** No connection to any live plant system, even read-only. No writes or commands beyond a single dummy message to a shipped simulator. Functional safety is out of scope, and leads that touch safety instrumented systems go to the safety owner.
 - **Standards crosswalk.** [STANDARDS.md](skills/industrial-audit/STANDARDS.md) maps the new classes to ISA/IEC 62443, NIST SP 800-82r3, MITRE ATT&CK for ICS, 21 CFR Part 11, EU GMP Annex 11, ALCOA+, ISA-18.2, ISA-101, the CISA AI-in-OT principles, the NIST AI RMF, the EU AI Act, and the OPC UA, Sparkplug and MQTT specifications. Findings may cite these identifiers. The audit never claims that a system is compliant.
 - **Typed hand-offs.** A lead that needs a running system becomes `needs_validation`, with a `runtime` check family (role matrix, fault injection, protocol conformance, agent injection, configuration review, records review) for whoever runs live tests.
@@ -40,7 +43,8 @@ Multiple runs against the same repo are additive. The skill uses prior ledgers a
 
 | File | Purpose |
 |------|---------|
-| `SKILL.md` | Setup, the two finding kinds, plant-system safety rules, core principles, severity anchors, workflow overview, and audit anti-patterns |
+| `SKILL.md` | Operating modes (build, guidance, full audit), setup, the two finding kinds, plant-system safety rules, core principles, severity anchors, workflow overview, and audit anti-patterns |
+| `BUILD-GUIDE.md` | Build mode: rules, questions to settle, code patterns, a closing condition table, and how to fix a finding, for an agent writing or fixing plant software |
 | `RECONNAISSANCE.md` | Phase 1 reconnaissance prompts, plant placement, and synthesis instructions |
 | `HUNTING.md` | Phase 2 orchestration, hunting methodology, and validation rules |
 | `ATTACK-CLASSES.md` | Core, wildcard, and obvious-things attack prompts, and the companion-selection list |
@@ -56,7 +60,9 @@ Multiple runs against the same repo are additive. The skill uses prior ledgers a
 | `DESKTOP-MOBILE-AND-LOCAL-IPC.md` | Native app, deep-link, webview, exported-component, helper, daemon, and local-IPC hunting classes |
 | `OT-BOUNDARY-AND-CONTROL-WRITES.md` | Write-down paths, approval binding, downloads, zone and conduit crossings, shipped listeners and egress, remote access, in-product script engines, and bypass modes |
 | `INDUSTRIAL-PROTOCOLS-AND-DEVICES.md` | OPC UA, MQTT and Sparkplug, fieldbus, historian-interface, gateway, and hostile-device hunting classes |
-| `PROCESS-DATA-INTEGRITY.md` | Quality codes, staleness, timestamps and time zones, units, aggregation, gaps, calculation and contract versions, late data, ingest checkpoints and buffers, tag identity, and lab data |
+| `PROCESS-DATA-INTEGRITY.md` | Acquisition and decoding, quality codes, staleness, timestamps and time zones, units, non-finite values, aggregation and window edges, gaps, calculation and contract versions, late data, ingest checkpoints and buffers, tag identity, lab data, and comparison with specification limits |
+| `MODELS-BATCH-AND-SIMULATION.md` | Soft-sensor and estimate validity, training and evaluation data, batch and golden-profile comparison, production-day and KPI arithmetic, balances, and simulation, fitting, and optimizer results |
+| `PIPELINES-JOBS-AND-RELIABILITY.md` | Acknowledgement and durable writes, reruns and retries, rejected-record accounting, scheduled-job windows and missed runs, concurrent writers, failures turned into defaults, and health that hides stalled data |
 | `RECORDS-AUDIT-AND-SIGNATURES.md` | Audit-trail completeness and tamper evidence, electronic signatures, retention, restore, and certified copies |
 | `ALARMS-HMI-AND-DISPLAY.md` | Stale and bad-quality display, units and time on screen, trends, shelving and suppression, and notification failure |
 | `AI-IN-PLANT-OPERATIONS.md` | Agent authority, AI disable switches and autonomy levels, AI recommendations reaching actions, grounding on plant data, fabricated tags, model change control, provider routing and residency, retention, and cross-site leakage |
@@ -90,7 +96,7 @@ Run `npx skills --help` for agent-selection and non-interactive options.
 
 ## Usage
 
-Start your coding agent in (or pointed at) the codebase you want to audit, then ask:
+Start your coding agent in (or pointed at) the codebase you want to audit or build, then ask:
 
 ```
 audit this historian connector for security and data-integrity issues
@@ -103,6 +109,12 @@ review the audit trail and e-signature code in ./records
 ```
 do an industrial audit of this repo, quick profile, output to ~/audits/gateway
 ```
+
+```
+build a soft sensor for melt index from these historian tags and lab results
+```
+
+A request to write, extend or fix plant software uses build mode: the agent reads `BUILD-GUIDE.md`, applies it as it writes, and finishes with the guide's condition table and tests. No audit files are written.
 
 A direct codebase audit or pen-test request uses full audit mode. Questions and focused reviews ("is this OPC UA client configuration safe?") use guidance mode, unless you ask for report artifacts. In full audit mode, an unspecified output directory defaults to `~/industrial-audit-skill/<repo-name>/run-<N>`. The workflow writes inside the target repository only when you explicitly select a directory that version control ignores.
 
@@ -120,6 +132,7 @@ A direct codebase audit or pen-test request uses full audit mode. Questions and 
 - **Severity requires impact.** For security, likelihood × impact, not deviation from a checklist. For data integrity, the decision the wrong result reaches, never an imagined physical consequence.
 - **Defense-in-depth gaps are not vulnerabilities.** If Layer A prevents the attack, the absence of Layer B is a hardening note.
 - **A standard's recommendation is not a finding.** Standards identifiers point to related requirements. Findings rest on demonstrated results, and the audit makes no compliance claims.
+- **Unknown is a result.** Most silent plant-data defects turn a bad input, a gap, a late arrival or a failed calculation into a normal-looking value. The build guide and the data-integrity classes both ask the same question of every output: what does it show when the honest answer is "unknown"?
 - **Multiple runs improve coverage.** In Cloudflare's test runs, a single run found roughly half of the vulnerabilities that repeated runs found in total.
 
 ## Development

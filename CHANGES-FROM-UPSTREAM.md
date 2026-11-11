@@ -32,7 +32,9 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - separate severity anchors for data-integrity records, with audit-trail defects rated high for a record the software claims to audit, medium under an uncommon condition, and never above deliberate tampering, which stays a `security` record;
   - three new anti-patterns;
   - the `quick` profile seeds one ledger unit per companion class group instead of one per class (defined in `RECONNAISSANCE.md`); `standard` and `deep` are unchanged;
-  - anti-pattern 5 now treats a separation of requester and approver that the software states as the boundary, so self-approval that defeats it is not dismissed as same-principal authority.
+  - anti-pattern 5 now treats a separation of requester and approver that the software states as the boundary, so self-approval that defeats it is not dismissed as same-principal authority;
+  - a third operating mode, build mode, which reads only `BUILD-GUIDE.md` when the task is to write, extend, or fix plant software, and a description that triggers on such tasks;
+  - under "Recommend the smallest effective source fix", a rule that a data-integrity fix must change what the consumer receives on every path that produces the result.
 - `RECONNAISSANCE.md`:
   - plant systems added to the no-contact list;
   - Agent 1a item 7, plant role, and item 8, the software's own placement and egress claims;
@@ -44,30 +46,33 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - each record writer and copy path becomes a ledger surface, so jobs and migrations get coverage units;
   - in `quick`, a companion unit's attack-class reference is the group heading, with each applicable class of the group in `selected_companion_blocks`, each inapplicable one in `excluded_blocks`, and a check per selected class before the unit closes. The ledger validator is unchanged; it already accepts heading references.
 - `ATTACK-CLASSES.md`:
-  - seven industrial target entries in the companion-selection list, with the OT-boundary entry also selected by listeners, plant-host connections, placement or egress claims and server-side script engines, governance also selected for role administration, permission resolution, stored connection credentials and agents and automations acting under a stored or forwarded identity, and the AI entry also selecting the caller-chosen-target class when an agent tool can open a connection;
+  - nine industrial target entries in the companion-selection list, with the OT-boundary entry also selected by listeners, plant-host connections, placement or egress claims and server-side script engines, governance also selected for role administration, permission resolution, stored connection credentials and agents and automations acting under a stored or forwarded identity, and the AI entry also selecting the caller-chosen-target class when an agent tool can open a connection;
   - a rule to select only the class groups of a companion whose boundary reconnaissance found, and to record the rest in `excluded_blocks`;
   - three plant items under Obvious things, the first also asking whether authentication is off until enabled or requests are answered before first-run setup, the third for connection strings shown below administrator and for debug or host-network ports in shipped files;
   - three Access control questions: revocation reaching sessions, tokens, jobs and agent runs; every route, socket event and scheduler entry enforcing the software's own role matrix, with exemption lists and guest or malformed tokens; and read-only roles triggering outbound side effects. Plant hosts are named in the SSRF item;
-  - the `confirmed` rule extended to data-integrity records.
+  - the `confirmed` rule extended to data-integrity records;
+  - a fourth plant item under Obvious things, for the idioms that turn an unknown into a value: handlers that return a default, a quality set by a literal, aggregates and verdicts over empty windows, lookups with no maximum age, job windows taken from the current time, and results used before a status check.
 - `HUNTING.md`:
   - the hunter method extended to data-integrity units, with record state and the audit trail in the invariant and imports, jobs, migrations and restores among the triggers;
   - plant systems added to the no-contact list;
   - `kind` and `data_path` added to the candidate contract;
   - write paths, regulated records and operating displays added to the priority order;
-  - candidate gate rule 3: a same-principal action that defeats a separation of duties the software states is a boundary result.
+  - candidate gate rule 3: a same-principal action that defeats a separation of duties the software states is a boundary result;
+  - a condition-table step in the data-integrity method: what each output delivers when an input is bad, stale, missing, late, or duplicated, when a calculation fails, and when a job runs twice, late, or halfway.
 - `VALIDATION-AND-REPORTING.md`:
   - verifier step 7 for data-integrity candidates;
   - the record contract for `kind`, `data_path`, `references` and `runtime`, with a `data_path` mapping for audit-trail and record defects;
   - demotion to `needs_validation` only for a decisive unknown fact; a deployment control that would only compensate for the software's own shipped behaviour is recorded as a condition;
   - `REPORT.md` split into security and data-integrity tables, with a standards column;
-  - a rule against compliance claims.
+  - a rule against compliance claims;
+  - verifier step 7 also states the honest result of a computed output, and the remediation check requires a data-integrity fix to change what the consumer receives on every path.
 - `AI-AND-LLM.md`: **Excessive agency and confused-deputy authority** also requires the dispatcher, not the tool list shown to the model, to enforce role and tool switches, and covers MCP servers and connectors that hold one shared credential.
 - `DATA-ISOLATION-AND-LIFECYCLE.md`: **Stale authorization and derived copy use** gains checks for where each request gets its permissions and for streams authorized once at connect time.
 - `README.md`: rewritten for the fork, with credit to the upstream work.
 - `LICENSE`: Cloudflare's notice kept; a copyright line added for the industrial additions.
 
 ## Added
-- Seven companion files in the upstream companion template:
+- Nine companion files in the upstream companion template:
   - `OT-BOUNDARY-AND-CONTROL-WRITES.md`
   - `INDUSTRIAL-PROTOCOLS-AND-DEVICES.md`
   - `PROCESS-DATA-INTEGRITY.md`
@@ -75,11 +80,14 @@ Upstream: [cloudflare/security-audit-skill](https://github.com/cloudflare/securi
   - `ALARMS-HMI-AND-DISPLAY.md`
   - `AI-IN-PLANT-OPERATIONS.md`
   - `GOVERNANCE-CONFIGURATION-AND-CHANGE.md`
+  - `MODELS-BATCH-AND-SIMULATION.md`
+  - `PIPELINES-JOBS-AND-RELIABILITY.md`
 
-  They hold 128 classes: 18 for the OT boundary, 17 for protocols, 18 for process data, 18 for records, 16 for alarms and displays, 21 for AI in plant operations and 20 for governance. Among them are agent and automation authority (grant ceilings, stored runs after the owner loses access, agent approval of its own proposals, agent reach into permission settings, AI disable switches and autonomy levels), permission resolution that fails open, audit-trail review and refused or partial actions, calculated-value and contract versioning, ingest checkpoints and store-and-forward spools, shipped listeners, undeclared egress and proxy routing, caller-chosen plant connection targets, connection secret readback and credential forwarding, model provider routing and residency, retention of prompts and derived stores, and in-product script and test-run engines. Every class is bounded to what the target software itself claims or to a demonstrated wrong result.
+  They hold 173 classes: 18 for the OT boundary, 17 for protocols, 29 for process data, 18 for records, 16 for alarms and displays, 21 for AI in plant operations, 20 for governance, 20 for models, batch analytics and simulation, and 14 for pipelines and jobs. The process-data file gained an acquisition and decoding group (subscription results never read back, sample loss inside a live session, reconnect gaps, register decoding and device error responses, non-simultaneous reads, metadata drift) and classes for unit symbols and bases, non-finite and sentinel values, window edges and labels, comparison with specification limits, and result states and replicates. The models file covers estimate quality, extrapolation, clamped and held results, online correction, training alignment and selection, leaky evaluation, batch boundaries, alignment, verdicts without enough data, reference sets, production days, KPI arithmetic, balances, solver status, measurement-to-model basis, steady-state inputs, property ranges, parameter fitting, and optimizer results. The pipelines file covers acknowledgement before a durable write, reruns and retries, rejected-record accounting, file and local-database durability, truncated reads, job windows, missed and overlapping runs, periods closed early, duplicate writers, lost updates, failures turned into defaults, schema and configuration drift, health that hides stalled data, and wall-clock durations. Among them are agent and automation authority (grant ceilings, stored runs after the owner loses access, agent approval of its own proposals, agent reach into permission settings, AI disable switches and autonomy levels), permission resolution that fails open, audit-trail review and refused or partial actions, calculated-value and contract versioning, ingest checkpoints and store-and-forward spools, shipped listeners, undeclared egress and proxy routing, caller-chosen plant connection targets, connection secret readback and credential forwarding, model provider routing and residency, retention of prompts and derived stores, and in-product script and test-run engines. Every class is bounded to what the target software itself claims or to a demonstrated wrong result.
 
-  Besides the sources listed in `STANDARDS.md`, the classes were also informed by the public documentation of industrial data and AI platforms and by published advisories in open-source industrial software. No vendor, product or advisory is named in the skill, and no vendor wording is reproduced.
+  Besides the sources listed in `STANDARDS.md`, the classes were also informed by the public documentation of industrial data and AI platforms and by published advisories in open-source industrial software. No vendor, product or advisory is named in the skill, and no vendor wording is reproduced. The classes added on 2026-11-11 were also informed by the documentation and specifications of open-source time-series stores, protocol stacks, data-collection agents, schedulers, numerical and simulation libraries, and laboratory and manufacturing systems, and by public measurement guidance. `BUILD-GUIDE.md` names open-source libraries where it states their documented default behaviour.
 - `STANDARDS.md`: a crosswalk from the industrial classes to standards identifiers, each checked against a public source. Paywalled standards are cited by identifier only.
+- `BUILD-GUIDE.md`: the file build mode reads. It holds seven rules (a sample is value, time, unit, quality and identity; three states, not two; a failure is not a value; count what you drop and mark what you fill; one function per rule on every path; stamp what produced it; ask, do not guess plant facts), the plant facts to settle before writing, pattern sections with short code examples checked against current library versions, a closing condition table, and a procedure for fixing a finding. It is not a companion file and holds no attack classes.
 - `scripts/check-skill.cjs`: structural checks for companion headings, selection-list links, the README file table, unique class names, and `FILE.md#Class` cross-references that must resolve to a class or heading.
 - `.github/workflows/test.yml`: runs the validator tests and the structure check on Linux, Windows, and macOS.
 - This file.

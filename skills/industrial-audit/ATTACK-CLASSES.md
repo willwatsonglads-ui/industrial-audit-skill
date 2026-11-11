@@ -32,7 +32,11 @@ Use `confirmed` only when source evidence and bounded validation establish the f
 >
 > **Industrial protocol and device targets** (OPC UA clients or servers, MQTT and Sparkplug producers or hosts, fieldbus gateways, historian interfaces, edge devices, or protocol translation): use [INDUSTRIAL-PROTOCOLS-AND-DEVICES.md](INDUSTRIAL-PROTOCOLS-AND-DEVICES.md).
 >
-> **Process-data integrity targets** (historians, time-series stores, ingest pipelines and their checkpoints and buffers, tag mapping, unit conversion, aggregation, lab, batch, or maintenance data imports, or any path where plant values keep or lose their time, unit, quality, and identity): use [PROCESS-DATA-INTEGRITY.md](PROCESS-DATA-INTEGRITY.md).
+> **Process-data integrity targets** (historians, time-series stores, protocol readers with their subscriptions, polling, and decoding, ingest pipelines and their checkpoints and buffers, tag mapping, unit conversion, aggregation, lab, batch, or maintenance data imports, comparison of results with specification limits, or any path where plant values keep or lose their time, unit, quality, and identity): use [PROCESS-DATA-INTEGRITY.md](PROCESS-DATA-INTEGRITY.md).
+>
+> **Model, batch analytics, and simulation targets** (soft sensors and other computed tags, forecasts and anomaly scores, batch or golden-profile comparisons, KPIs, yields and balances, process simulations or digital twins fed with plant data, reconciliation, parameter fitting, or optimizers): use [MODELS-BATCH-AND-SIMULATION.md](MODELS-BATCH-AND-SIMULATION.md).
+>
+> **Pipeline, scheduled job, and runtime reliability targets** (sync scripts and connectors, drop-folder importers, queue or stream consumers, scheduled reports and rollups, or any background service whose output must stay right across a restart, retry, outage, slow sink, or clock change): use [PIPELINES-JOBS-AND-RELIABILITY.md](PIPELINES-JOBS-AND-RELIABILITY.md).
 >
 > **Records, audit-trail, and signature targets** (audit trails, electronic signatures, batch and release records, quality records, change records, retention, archive, or certified copies): use [RECORDS-AUDIT-AND-SIGNATURES.md](RECORDS-AUDIT-AND-SIGNATURES.md).
 >
@@ -146,6 +150,7 @@ Other agents hunt subtle bugs. This agent checks the basic exposures that are ea
 - For plant software: are there default or shared gateway, historian, broker, or HMI logins? Is an OPC UA endpoint or client configured with security mode or policy `None`, or set to accept any server or client certificate? Is a broker reachable without authentication, or does it grant a wildcard subscription? Does an admin or configuration web interface listen on all interfaces, or over plain HTTP? Does the server run with authentication off until someone enables it, or answer requests before first-run setup completes?
 - For plant software: is a write, command, or simulation flag gated only by a configuration value or environment variable that a deployment could leave on? Are recorded plant fixtures, exports, or screenshots carrying real site names, tag lists, or network addresses checked into the repo?
 - For plant software: does any API response, settings page, configuration export, diagnostics bundle, or error message return a historian, broker, database, or OPC UA connection string, password, or private key to a role below administrator? Does a shipped installer, service definition, or container file open a debug, profiler, or remote-management port, or use host networking?
+- For plant software: does a broad exception handler return zero, an empty list, or the previous value? Is a quality or status set to good by a literal? Does a sum, mean, limit check, or verdict run on a window that can be empty or missing? Does an as-of join, forward-fill, or latest-value query have no maximum age? Does a scheduled job take its window from the current time, or insert without a key? Is a solver's, fit's, or device read's result used before its status is checked?
 
 This agent does not need to be creative. It needs to be thorough and literal. Check every item. Report each result.
 

@@ -45,7 +45,9 @@ unavailable or fails, do not use that file as evidence.
    candidate or lower it to what remains wrong. If the result depends on a device,
    gateway, historian, or site setting that source cannot show, keep needs_validation
    and name that setting exactly. Never confirm one from a simulator's behavior alone
-   when the claim is about a real device.
+   when the claim is about a real device. For a computed result (an estimate, verdict,
+   KPI, or simulation output), state what the honest result was (another value, a
+   lower quality, or unknown) and confirm that the delivered one differs.
 
 Return exactly one JSON object and no surrounding prose:
 {"decision": "confirmed|needs_validation|rejected", "record": { ... }}
@@ -139,7 +141,7 @@ For `confirmed`, require it to check:
 3. Every condition, parser/policy step, source-visible preventing layer, and observed local result.
 4. Affected principal/resource and demonstrated impact.
 5. Severity separation: realistic likelihood, demonstrated impact, overall no greater than impact.
-6. Remediation strategy and any `code_changes`, including whether the fix enforces the invariant without merely moving trust.
+6. Remediation strategy and any `code_changes`, including whether the fix enforces the invariant without merely moving trust. For a `data_integrity` record, check that the fix changes what the consumer receives on every path that produces the result; detecting the condition is not enough.
 
 For `needs_validation`, require it to check:
 

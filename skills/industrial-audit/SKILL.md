@@ -1,6 +1,6 @@
 ---
 name: industrial-audit
-description: Security and data-integrity review for software deployed in manufacturing and process plants, including AI in plant operations. Covers historians, SCADA and HMI software, MES, LIMS, maintenance and batch-record systems, OPC UA, MQTT and Sparkplug, fieldbus gateways, edge devices, plant data pipelines, operator displays and alarms, regulated electronic records (21 CFR Part 11, EU GMP Annex 11), and AI agents or models that read or act on plant data. Also covers ordinary codebases, APIs, services, CLI tools, libraries, and daemons. Use for security or data-integrity questions, focused reviews, OT security reviews, audit-trail reviews, vulnerability research, security audits, or pen tests. Run the complete workflow only for explicit codebase audit or pen-test requests, full/comprehensive/end-to-end reviews, or requested report artifacts.
+description: Build rules and security and data-integrity review for software deployed in manufacturing and process plants, including AI in plant operations. Covers historians, SCADA and HMI software, MES, LIMS, maintenance and batch-record systems, OPC UA, MQTT and Sparkplug, fieldbus gateways, edge devices, plant data pipelines and scheduled jobs, soft sensors, batch analytics, KPIs, process simulation and digital twins, operator displays and alarms, regulated electronic records (21 CFR Part 11, EU GMP Annex 11), and AI agents or models that read or act on plant data. Also covers ordinary codebases, APIs, services, CLI tools, libraries, and daemons. Use when writing, extending, or fixing plant software, and for security or data-integrity questions, focused reviews, OT security reviews, audit-trail reviews, vulnerability research, security audits, or pen tests. Run the complete workflow only for explicit codebase audit or pen-test requests, full/comprehensive/end-to-end reviews, or requested report artifacts.
 ---
 
 # Industrial Audit
@@ -16,10 +16,11 @@ This is a defensive, source-first workflow. A security candidate without a concr
 
 This skill is guidance by default. Loading it does not authorize the complete audit workflow or file creation.
 
-- **Guidance mode**: For security questions, focused reviews, methodology, triage, or investigation of specific findings, use only the relevant parts of this skill. Do not automatically run all six phases, create an output directory, or write audit artifacts. You may launch focused agents when useful; they return results to the current task.
+- **Build mode**: When the task is to write, extend, or fix software that handles plant data, read [BUILD-GUIDE.md](BUILD-GUIDE.md) before writing code and apply it as you write. It is self-contained: do not load the audit phases, launch agents, or write audit artifacts. Finish with its condition table and tests. To fix a finding from an earlier audit, follow its "Fixing a finding" section.
+- **Guidance mode**: For security questions, focused reviews, methodology, triage, or investigation of specific findings, use only the relevant parts of this skill. Do not automatically run all six phases, create an output directory, or write audit artifacts. You may launch focused agents when useful; they return results to the current task. For a quick data-integrity look at a small tool, start with the condition table in [BUILD-GUIDE.md](BUILD-GUIDE.md) ("Before you call it done"): fill it in for each output the tool produces, then open only the companion files its failing rows point to.
 - **Full audit mode**: Use the complete workflow when the user explicitly asks to audit or pen-test a codebase, asks for a full, comprehensive, or end-to-end security review, or requests report artifacts. Run all six phases and write the files defined below.
 
-If the request could mean either mode, ask one focused question before creating files or starting the complete workflow.
+If the request could mean either guidance or a full audit, ask one focused question before creating files or starting the complete workflow.
 
 ## Platform terminology
 
@@ -212,6 +213,8 @@ Rate an audit-trail defect by the record whose history it hides: high for a reco
 ### Recommend the smallest effective source fix
 
 For each confirmed finding, identify the invariant the code must enforce and the narrowest source change that enforces it at the last trusted decision point. Prefer specific repository-relative changes and regression tests over generic hardening advice. The audit describes fixes; it does not modify target source.
+
+For a `data_integrity` finding, a fix is effective only when the consumer's result becomes right or visibly unknown on every path that produces it. Name the sibling paths that need the same change (fit time and run time, live and backfill, API, export, and report) and the fixture that fails before the fix and passes after. Code that detects the condition but still delivers the same result is not a fix. [BUILD-GUIDE.md](BUILD-GUIDE.md) holds the patterns to point to.
 
 ## Full audit workflow
 

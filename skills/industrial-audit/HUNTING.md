@@ -65,6 +65,12 @@ wrong stored row, rendered field, record entry, or model input. Return `kind:
 "data_integrity"` and the `data_path` fields. A difference the consumer can already
 see, or one no decision depends on, is not a candidate.
 
+WORK A CONDITION TABLE for each output on the assigned path: what does it deliver
+when an input is bad, stale, missing, late, duplicated, out of range, or not yet
+present, when a calculation fails or does not converge, and when a job runs twice,
+late, or halfway? Any row where the honest answer is "unknown" and the output is a
+normal-looking value, a pass, or an old result under a new time is a candidate.
+
 DEPTH BOUND: trace only paths that can reach your assigned boundary or whose
 guarantees that boundary relies on. Stop a line of investigation as soon as the
 invariant is settled either way, and record the result in your structured output —
